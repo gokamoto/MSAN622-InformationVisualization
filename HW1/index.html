@@ -49,7 +49,13 @@
 			var w = 800;
 			var h = 500;
 			var barPadding = 5;
-			var 
+			var leftMargin = 10;
+			var rightMargin = 0;
+			var bottomMargin = 50;
+			var topMargin = 10;
+			var hSub = h - topMargin - bottomMargin;
+			var wSub = w - leftMargin - rightMargin;
+
 			var maxVal = d3.max(dataset);
 
 			//Create SVG element
@@ -66,17 +72,17 @@
 			   .append("rect")
 			   // x = index + bar width of (svg width) / (number of bars)
 			   .attr("x", function(d, i) {
-    				return i * (w / dataset.length);  
+    				return i * (wSub / dataset.length) + leftMargin;  
 				})
 			   // for svg (0,0) is upper left corner
 			   .attr("y", function(d) {
-    				return h - h*(d/maxVal);  //Height minus data value * 4
+    				return h - hSub*(d/maxVal) - bottomMargin;  //Height minus data value * 4
 				})
 			   // bar width of (svg width) / (number of bars)
-			   .attr("width", w / dataset.length - barPadding)
+			   .attr("width", wSub / dataset.length - barPadding)
 			   // height is d = data value times 4 for sizing
 			   .attr("height", function(d) {
-    				return h*(d/maxVal);  // <-- Times four!
+    				return hSub*(d/maxVal);  // <-- Times four!
 				})
 			   .attr("fill", "teal");
 
@@ -110,9 +116,11 @@
    			   		return d;
    			   })
    			   .attr("x", function(d, i) {
-   			   		return i*(w/dataset.length) + 0.5*(w/dataset.length-barPadding);
+   			   		return i*(w/dataset.length) + 0.5*(w/dataset.length-barPadding) + leftMargin;
    			   })
-   			   .attr("y", h-10);
+   			   .attr("y", h-(bottomMargin/2)); 
+
+
 
 		</script>
 
