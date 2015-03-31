@@ -2,11 +2,11 @@
 MSAN 622 Information Visualization
 ==================================
 
-|  **Name:** | Sophie Engle           |
+|  **Name:** | Griffin Okamoto        |
 |-----------:|:-----------------------|
-| **Email:** | <sjengle@cs.usfca.edu> |
-|   **Web:** | <http://msan622.github.io/spring-2015-msan622> |
+| **Email:** | <gmokamoto@usfca.edu>  |
+|   **Web:** | <http://gokamoto.github.io/MSAN622-InformationVisualization> |
 
 ## About Me ##
 
-I am a professor at the [University of San Francisco](http://www.usfca.edu/). I am the graduate director for the Masters of Science in Computer Science program, and teach courses for the Department of Computer Science and Masters of Science in Analytics program. I have a stubborn yet adorable corgi named Casablanca (after the movie).
+I am a graduate student in the [University of San Francisco M.S. in Analytics](http://www.usfca.edu/analytics/) program. I completed my B.S. in Statistics from the University of California, Davis in 2014.
