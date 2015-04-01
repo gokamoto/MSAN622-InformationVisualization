@@ -6,17 +6,28 @@
 
 /* bar color */
 .bar {
-  fill: steelblue;
+  fill: #2B62EE;
+  transition: fill .2s;
 }
 
 /* bar color if hovered over */
 .bar:hover {
-  fill: brown;
+  fill: #5E95FF;
+}
+
+/* color vowels differently */
+.bar.vowel {
+  fill: #E7B727;
+}
+
+/* bar color if vowel and hovered over */
+.bar.vowel:hover {
+  fill: #FFD141;
 }
 
 /* Text for axes ticks */
-.axis text {
-  font: 10px sans-serif;
+text {
+  font: 12px sans-serif;
 }
 
 /* path displays the domain, line is tick mark */
@@ -25,12 +36,23 @@
   fill: none;
   stroke: #000;
   shape-rendering: crispEdges;
+  stroke-width: 2; /* axis thickness (B level functionality) */
 }
 
 /* eliminate line from x-axis */
 .x.axis path {
   display: none;
 }
+
+.bar:hover + text {
+  opacity: 1;
+}
+
+.bargroup text {
+  opacity: 0;
+  transition: opacity .2s;
+}
+
 </style>
 
 <!-- Create SVG chart -->
@@ -66,6 +88,7 @@ for (var i = 0; i < uriRegex.length; i++) {
 
 // Create array of objects, each with one letter:count key-value pair
 var data = d3.entries(counter);
+yMax = d3.max(data, function(d) { return d.value; })
 
 // Sort alphabetically (B level functionality)
 data.sort(function(a, b) {
@@ -92,14 +115,20 @@ var x = d3.scale.ordinal()
 var y = d3.scale.linear()
     .range([height, 0]);
 
-// 
+// We define an axis by binding it to our existing scale and 
+// declaring one of the four orientations. 
 var xAxis = d3.svg.axis()
     .scale(x)
     .orient("bottom");
 
+// Change tick marks to only integers (B level functionality)
+yTicks = [];
+for (var i = 0; i <= yMax; i++) { yTicks.push(i); }
 var yAxis = d3.svg.axis()
     .scale(y)
-    .orient("left");
+    .orient("left")
+    .tickValues(yTicks)
+    .tickFormat(d3.format('.0f'));
 
 var chart = d3.select(".chart")
     // Set width and height of SVG element to outer width and height
@@ -109,32 +138,89 @@ var chart = d3.select(".chart")
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-x.domain(data.map(function(d) { return d.key; }));
-y.domain([0, d3.max(data, function(d) { return d.value; })]);
-
 // 
+x.domain(data.map(function(d) { return d.key; }));
+y.domain([0, yMax]);
+
+// The axis elements are positioned relative to a local origin, 
+// so to transform into the desired position we set the 
+// "transform" attribute on a containing g element
+
+// x-axis + tick labels
 chart.append("g")
-    .attr("class", "x axis")
+    .attr("class", "x axis") // multiple class names
     .attr("transform", "translate(0," + height + ")")
     .call(xAxis);
 
+// y-axis + tick labels
 chart.append("g")
     .attr("class", "y axis")
     .call(yAxis);
 
-chart.selectAll(".bar")
-    .data(data)
-  .enter().append("rect")
-    .attr("class", "bar")
-    .attr("x", function(d) { return x(d.key); })
-    .attr("y", function(d) { return y(d.value); })
-    .attr("height", function(d) { return height - y(d.value); })
-    .attr("width", x.rangeBand());
+// y-axis title
+chart.append("g")
+    .attr("class", "y axis")
+    .call(yAxis)
+  .append("text")
+    .attr("transform", "rotate(-90) translate(-12, 0)")
+    .attr("y", 6)
+    .attr("dy", ".6em")
+    .style("text-anchor", "end")
+    .text("Frequency");
 
+// Horizontal grid lines (B level functionality)
+chart.selectAll("line.horizontalGrid").data(y.ticks(yMax)).enter()
+    .append("line")
+        .attr(
+        {
+            "class":"horizontalGrid",
+            "x1" : 0,
+            "x2" : width,
+            "y1" : function(d){ return y(d);},
+            "y2" : function(d){ return y(d);},
+            "fill" : "none",
+            "shape-rendering" : "crispEdges",
+            "stroke" : "LightGray",
+            "stroke-width" : "1px",
+        });
 
+vowels = ['a', 'e', 'i', 'o', 'u'];
+
+// Create the actual bars
+var groups = chart.selectAll(".bargroup").data(data);
+
+groups.enter().append("g").attr('class', 'bargroup');
+
+groups.append('rect')
+  .attr("class", function(d) { 
+    if (vowels.indexOf(d.key) >= 0) { return "bar vowel"; }
+    else {return "bar"; }
+  })
+  .attr("x", function(d) { return x(d.key); }) // x location: use x scale
+  .attr("width", x.rangeBand())
+  .attr("y", height)
+  .attr("height", 0)
+
+  .transition().duration(1000)
+  .attr("y", function(d) { return y(d.value); }) // y location: use y scale
+  .attr("height", function(d) { return height - y(d.value); }) 
+
+// labels
+groups.append("text")
+  .text(function(d) {
+    return d.value;
+  })
+  .attr("x", function(d) { return x(d.key) + 0.45*x.rangeBand(); })
+  .attr("y", function(d) { return y(d.value) - 5; });
+
+  
+
+// Part of template but not necessary since we aren't using d3.tsv
+/*
 function type(d) {
   d.value = +d.value; // coerce to number
   return d;
 }
+*/
 
 </script>
