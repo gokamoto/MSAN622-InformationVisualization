@@ -17,7 +17,7 @@
         padding-top: 50px;
         padding-bottom: 20px;
         padding-left: 50px;
-        padding-right: 20px;
+        padding-right: 50px;
     }
 
     .myheader {
@@ -249,7 +249,7 @@ chart.selectAll("line.horizontalGrid").data(y.ticks(yMax)).enter()
         .attr(
         {
             "class":"horizontalGrid",
-            "x1" : 0,
+            "x1" : 1,
             "x2" : width,
             "y1" : function(d){ return y(d);},
             "y2" : function(d){ return y(d);},
@@ -294,25 +294,53 @@ groups.append("text")
 
 
 <!-- List of Functionality -->
-<h3> C-Level Functionality </h3>
-<ul>
-    <li> Get query string from URL. </li>
-    <li> Create bar chart of the letter counts using D3 in an SVG. </li>
-</ul>
 
-<h3> B-Level Functionality </h3>
-<ul>
-    <li> Remove decimal places on y-axis tick marks. </li>
-    <li> Reduce y-axis tick marks to integers only. </li>
-    <li> Thicken y-axis line to 2px. </li>
-    <li> Change the colors of the bars: vowels are gold, consonants are blue. </li>
-    <li> Sort bars alphabetically. </li>
-</ul>
 
-<h3> A-Level Functionality </h3>
-<ul>
-    <li> Show exact value of bar when hovering over it. </li>
-</ul>
+
+<div class="row">
+    <div class="col-md-5">
+
+        <h2 class="page-header"> List of Functionality </h2>
+
+        <h4> C-Level Functionality </h4>
+        <ul>
+            <li> Get query string from URL. </li>
+            <li> Create bar chart of the letter counts using D3 in an SVG. </li>
+        </ul>
+
+        <h4> B-Level Functionality </h4>
+        <ul>
+            <li> Remove decimal places on y-axis tick marks. </li>
+            <li> Reduce y-axis tick marks to integers only. </li>
+            <li> Thicken y-axis line to 2px. </li>
+            <li> Change the colors of the bars: vowels are gold, consonants are blue. </li>
+            <li> Sort bars alphabetically. </li>
+            <li> Add grid lines </li>
+        </ul>
+
+        <h4> A-Level Functionality </h4>
+        <ul>
+            <li> Show exact value of bar when hovering over it. </li>
+        </ul>
+
+    </div>
+
+    <div class="col-md-7">
+        <h2 class="page-header"> Discussion of Functionality </h2>
+        <p>
+            Most of my design decisions (changes from the <a href="http://bl.ocks.org/mbostock/3885304">tutorial source code</a>) focused on clarity. For example, the number y-axis tick labels was pre-determined, regardless of the range of the data. This resulted in a lot of non-integer tick marks, which does not make sense for count data. Thus, I specified there should be tick marks and grid lines at integers only, and no decimal places displayed. However, many other design decisions were simply to experiment with D3, e.g. thickening the y-axis line.
+        </p>
+        <p>
+            Some other changes I made were both for aesthetics and interactivity. I chose blue and gold because they are very different in both hue and intensity. When hovered over, the bars lighten and the exact value of the bar is displayed. I chose not to use a very bold tooltip (<a href="http://bl.ocks.org/Caged/6476579">example</a>) for showing the value because I felt the colors were already creating a lot of visual contrast. The grid lines already help make it clear what the value is, so it did not need to be emphasized much further.
+        </p>
+
+    </div>
+</div>
+
+
+
+
+
 
 <div class="container">
 
