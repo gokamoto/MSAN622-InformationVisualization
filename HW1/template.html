@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- CSS -->
+<style>
+
+/* bar color */
+.bar {
+  fill: steelblue;
+}
+
+/* bar color if hovered over */
+.bar:hover {
+  fill: brown;
+}
+
+/* Text for axes ticks */
+.axis text {
+  font: 10px sans-serif;
+}
+
+/* path displays the domain, line is tick mark */
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+/* eliminate line from x-axis */
+.x.axis path {
+  display: none;
+}
+</style>
+
+<!-- Create SVG chart -->
+<svg class="chart"></svg>
+
+<!-- Import d3 -->
+<script src="http://d3js.org/d3.v3.min.js"></script>
+
+<!-- Javascript chart creation -->
+<script>
+
+// Grab search portion of uri
+var uri = document.location.search;
+// Decode and convert to lowercase
+var uriDecoded = decodeURI(uri).toLowerCase();
+// Eliminate non-alphanumeric characters
+var uriRegex = uriDecoded.replace(/[^a-z0-9]/, '');
+
+// Create letter counter object
+var counter = {};
+
+// For every letter in uri,
+for (var i = 0; i < uriRegex.length; i++) {
+  // if letter in object already, add 1 to count
+  if (uriRegex[i] in counter) {
+    counter[uriRegex[i]] += 1;
+  }
+  // if letter not in object, set count to 1
+  else {
+    counter[uriRegex[i]] = 1;
+  }
+}
+
+// Create array of objects, each with one letter:count key-value pair
+var data = d3.entries(counter);
+
+// Sort alphabetically (B level functionality)
+data.sort(function(a, b) {
+  if (a.key < b.key) { return -1; }
+  else if (a.key > b.key) { return 1; }
+  else { return 0; }
+})
+
+// Margins, width and height
+var margin = {top: 20, right: 30, bottom: 30, left: 40},
+    // Inner width/height, 960 and 500 are outer width/height
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+// X is an ordinal scale:
+// a mapping from a discrete set of data values (such as names) 
+// to a corresponding discrete set of display values
+// rangeRoundBands method computes range values so as to divide 
+// the chart area into evenly-spaced, evenly-sized bands with padding
+var x = d3.scale.ordinal()
+    .rangeRoundBands([0, width], .1); 
+
+// Y is a linear scale
+var y = d3.scale.linear()
+    .range([height, 0]);
+
+// 
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+
+var chart = d3.select(".chart")
+    // Set width and height of SVG element to outer width and height
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  //add a g element to offset the origin of the chart area by the top-left margin
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+x.domain(data.map(function(d) { return d.key; }));
+y.domain([0, d3.max(data, function(d) { return d.value; })]);
+
+// 
+chart.append("g")
+    .attr("class", "x axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(xAxis);
+
+chart.append("g")
+    .attr("class", "y axis")
+    .call(yAxis);
+
+chart.selectAll(".bar")
+    .data(data)
+  .enter().append("rect")
+    .attr("class", "bar")
+    .attr("x", function(d) { return x(d.key); })
+    .attr("y", function(d) { return y(d.value); })
+    .attr("height", function(d) { return height - y(d.value); })
+    .attr("width", x.rangeBand());
+
+
+function type(d) {
+  d.value = +d.value; // coerce to number
+  return d;
+}
+
+</script>
