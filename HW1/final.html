@@ -12,14 +12,18 @@
 <link href="../css/bootstrap-theme.min.css" rel="stylesheet">
 
 <style type="text/css">
+
     body {
         padding-top: 50px;
         padding-bottom: 20px;
+        padding-left: 50px;
+        padding-right: 20px;
     }
 
     .myheader {
         font-size: 30px;
     }
+
 </style>
 
 
@@ -37,19 +41,19 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="#">MSN 622</a>
+            <a class="navbar-brand" href="http://gokamoto.github.io/MSAN622-InformationVisualization">MSAN 622</a>
         </div>
 
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-                <li><a href="#homework">Homework</a></li>
-                <li><a href="#project">Project</a></li>
-                <li><a href="#participation">Participation</a></li>
+                <li><a href="http://gokamoto.github.io/MSAN622-InformationVisualization#homework">Homework</a></li>
+                <li><a href="http://gokamoto.github.io/MSAN622-InformationVisualization#project">Project</a></li>
+                <li><a href="http://gokamoto.github.io/MSAN622-InformationVisualization#participation">Participation</a></li>
             </ul>
 
             <ul class="nav navbar-nav navbar-right">
-                <li><a href="#about">About</a></li>
-                <li><a href="#contact">Contact</a></li>
+                <li><a href="http://gokamoto.github.io/MSAN622-InformationVisualization#about">About</a></li>
+                <li><a href="http://gokamoto.github.io/MSAN622-InformationVisualization#contact">Contact</a></li>
             </ul>
         </div><!--/.nav-collapse -->
     </div>
@@ -64,7 +68,7 @@
 
 
 
-
+<!-- ALL CHART CODE BELOW -->
 
 <!-- CSS -->
 <style>
@@ -140,7 +144,7 @@ console.log(document.location);
 // Decode and convert to lowercase
 var uriDecoded = decodeURI(uri).toLowerCase();
 // Eliminate non-alphanumeric characters
-var uriRegex = uriDecoded.replace(/[^a-z0-9]/, '');
+var uriRegex = uriDecoded.replace(/[^a-z]/g, '');
 
 // Create letter counter object
 var counter = {};
@@ -286,10 +290,29 @@ groups.append("text")
 
 </script>
 
+<!-- END OF CHART CODE -->
 
 
+<!-- List of Functionality -->
+<h3> C-Level Functionality </h3>
+<ul>
+    <li> Get query string from URL. </li>
+    <li> Create bar chart of the letter counts using D3 in an SVG. </li>
+</ul>
 
+<h3> B-Level Functionality </h3>
+<ul>
+    <li> Remove decimal places on y-axis tick marks. </li>
+    <li> Reduce y-axis tick marks to integers only. </li>
+    <li> Thicken y-axis line to 2px. </li>
+    <li> Change the colors of the bars: vowels are gold, consonants are blue. </li>
+    <li> Sort bars alphabetically. </li>
+</ul>
 
+<h3> A-Level Functionality </h3>
+<ul>
+    <li> Show exact value of bar when hovering over it. </li>
+</ul>
 
 <div class="container">
 
