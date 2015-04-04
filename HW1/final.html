@@ -279,9 +279,11 @@ groups.append('rect')
   .attr("y", height)
   .attr("height", 0)
 
-  .transition().duration(1000)
-  .attr("y", function(d) { return y(d.value); }) // y location: use y scale
-  .attr("height", function(d) { return height - y(d.value); }) 
+  .transition()
+    .duration(500)
+    .delay(function(d, i) { return i * 500; })
+    .attr("y", function(d) { return y(d.value); }) // y location: use y scale
+    .attr("height", function(d) { return height - y(d.value); }) 
 
 // labels
 groups.append("text")
@@ -309,21 +311,22 @@ groups.append("text")
         <ul>
             <li> Get query string from URL. </li>
             <li> Create bar chart of the letter counts using D3 in an SVG. </li>
-        </ul>
-
-        <h4> B-Level Functionality </h4>
-        <ul>
             <li> Remove decimal places on y-axis tick marks. </li>
             <li> Reduce y-axis tick marks to integers only. </li>
             <li> Thicken y-axis line to 2px. </li>
             <li> Change the colors of the bars: vowels are gold, consonants are blue. </li>
             <li> Sort bars alphabetically. </li>
-            <li> Add grid lines </li>
+            <li> Add grid lines. </li>
+        </ul>
+
+        <h4> B-Level Functionality </h4>
+        <ul>
+            <li> Show exact value of bar when hovering over it. </li>
         </ul>
 
         <h4> A-Level Functionality </h4>
         <ul>
-            <li> Show exact value of bar when hovering over it. </li>
+            <li> Show one bar at a time and smoothly grow each bar. </li>
         </ul>
 
     </div>
