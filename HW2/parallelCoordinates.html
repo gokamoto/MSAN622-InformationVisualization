@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Import d3 -->
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<!-- <script src="../js/d3.min.js"></script> -->
+
+<p id="parallelCoordChart"></p>
+
+<style>
+
+svg3 {
+  font: 10px sans-serif;
+}
+
+.background3 path {
+  fill: none;
+  stroke: #ccc;
+  stroke-opacity: .4;
+  shape-rendering: crispEdges;
+}
+
+.foreground3 path {
+  fill: none;
+  stroke: steelblue;
+  stroke-opacity: .7;
+}
+
+.brush3 .extent {
+  fill-opacity: .3;
+  stroke: #fff;
+  shape-rendering: crispEdges;
+}
+
+.axis3 line, .axis3 path {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.axis3 {
+  text-shadow: 0 1px 0 #fff;
+  font: 10px sans-serif;
+}
+
+.axisTitle3 {
+	font: 12px sans-serif;
+}
+
+</style>
+
+<script>
+
+var m = [30, 10, 10, 10],
+    w = 960 - m[1] - m[3],
+    h = 500 - m[0] - m[2];
+
+var x3 = d3.scale.ordinal().rangePoints([0, w], .5),
+    y3 = {};
+
+var line3 = d3.svg.line(),
+    axis3 = d3.svg.axis().orient("left"),
+    background3,
+    foreground3;
+
+var svg3 = d3.select("#parallelCoordChart").append("svg")
+    .attr("width", w + m[1] + m[3])
+    .attr("height", h + m[0] + m[2])
+  .append("g")
+    .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
+
+var newTitles3 = {"Population": "population",
+				  "Income per Capita": "income",
+				  "Illiteracy Rate": "illiteracy",
+				  "Life Expectancy": "lifeExp",
+				  "Murders per 100k": "murder",
+				  "HS Grad Rate": "hs",
+				  "Days Below Freezing": "frost",
+				  "Area": "area"};
+
+
+d3.json("state.x77.json", function(state) {
+
+  // Extract the list of dimensions and create a scale for each.
+  x3.domain(dimensions = d3.keys(newTitles3).filter(function(d) {
+  // x3.domain(dimensions = d3.keys(newTitles3).filter(function(d) {
+    return newTitles3[d] != "name" 
+    		&& newTitles3[d] != "abb"
+    		&& newTitles3[d] != "division" 
+    		&& newTitles3[d] != "region"
+    		&& (y3[d] = d3.scale.linear()
+        			.domain(d3.extent(state, function(p) { 
+        				return +p[newTitles3[d]]; 
+        			}))
+        			.range([h, 0]));
+  }));
+
+  console.log(x3.domain())
+  console.log(y3)
+
+  // console.log(Object.keys(y3));
+
+  // Add grey background lines for context.
+  background3 = svg3.append("g")
+      .attr("class", "background3")
+    .selectAll("path")
+      .data(state)
+    .enter().append("path")
+      .attr("d", path);
+
+  // Add blue foreground lines for focus.
+  foreground3 = svg3.append("g")
+      .attr("class", "foreground3")
+    .selectAll("path")
+      .data(state)
+    .enter().append("path")
+      .attr("d", path);
+
+  // Add a group element for each dimension.
+  var g3 = svg3.selectAll(".dimension")
+      .data(dimensions)
+    .enter().append("g")
+      .attr("class", "dimension")
+      .attr("transform", 
+      	function(d) { return "translate(" + x3(d) + ")"; 
+      });
+
+  // Add an axis and title.
+  g3.append("g")
+      .attr("class", "axis3")
+      .each(function(d) { 
+      	d3.select(this).call(axis3.scale(y3[d])); 
+      })
+    .append("text")
+      .attr("class", "axisTitle3")
+      .attr("text-anchor", "middle")
+      .attr("y", -9)
+      .text(String);
+
+  // Add and store a brush for each axis.
+  g3.append("g")
+      .attr("class", "brush3")
+      .each(function(d) { d3.select(this).call(y3[d].brush = d3.svg.brush().y(y3[d]).on("brush", brush)); })
+    .selectAll("rect")
+      .attr("x", -8)
+      .attr("width", 16);
+});
+
+
+// Returns the path for a given data point.
+function path(d) {
+  return line3(dimensions.map(function(p) { 
+  	return [x3(p), y3[p](d[newTitles3[p]])]; }));
+}
+
+// Handles a brush event, toggling the display of foreground lines.
+function brush() {
+  var actives = dimensions.filter(function(p) { return !y3[p].brush.empty(); }),
+      extents = actives.map(function(p) { return y3[p].brush.extent(); });
+  foreground3.style("display", function(d) {
+    return actives.every(function(p, i) {
+      return extents[i][0] <= d[p] && d[p] <= extents[i][1];
+    }) ? null : "none";
+  });
+}
+
+</script>
