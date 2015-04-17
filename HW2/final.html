@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>MSAN 622 Information Visualization</title>
+
+<link href="../css/bootstrap.min.css" rel="stylesheet">
+<link href="../css/bootstrap-theme.min.css" rel="stylesheet">
+
+<style type="text/css">
+
+    body {
+        padding-top: 50px;
+        padding-bottom: 20px;
+        padding-left: 50px;
+        padding-right: 50px;
+    }
+
+    .myheader {
+        font-size: 30px;
+    }
+
+</style>
+
+
+</head>
+
+<body>
+
+<!-- Fixed Navbar -->
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle Navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://gokamoto.github.io/MSAN622-InformationVisualization">MSAN 622</a>
+        </div>
+
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="http://gokamoto.github.io/MSAN622-InformationVisualization#homework">Homework</a></li>
+                <li><a href="http://gokamoto.github.io/MSAN622-InformationVisualization#project">Project</a></li>
+                <li><a href="http://gokamoto.github.io/MSAN622-InformationVisualization#participation">Participation</a></li>
+            </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="http://gokamoto.github.io/MSAN622-InformationVisualization#about">About</a></li>
+                <li><a href="http://gokamoto.github.io/MSAN622-InformationVisualization#contact">Contact</a></li>
+            </ul>
+        </div><!--/.nav-collapse -->
+    </div>
+</nav>
+
+<div class="container">
+    <div class="myheader">
+        <h1>Homework 1: Letter Count Bar Chart</h1>
+    </div>
+    <p>Add a search term to the URL and refresh the page to see a bar chart of the (alpha-numeric) characters in your search string! For example, append "?UniversityofSanFrancisco" the end of the URL. </p>
+    <p> Griffin Okamoto </p>
+    <a href="https://github.com/gokamoto/MSAN622-InformationVisualization/tree/gh-pages/HW1">Source Code </a>
+    
+</div>
+
+<!-- List of Functionality -->
+
+
+
+<div class="row">
+    <div class="col-md-5">
+
+        <h2 class="page-header"> List of Functionality </h2>
+
+        <h4> C-Level Functionality </h4>
+        <ul>
+            <li> Get query string from URL. </li>
+            <li> Create bar chart of the letter counts using D3 in an SVG. </li>
+            <li> Remove decimal places on y-axis tick marks. </li>
+            <li> Reduce y-axis tick marks to integers only. </li>
+            <li> Thicken y-axis line to 2px. </li>
+            <li> Change the colors of the bars: vowels are gold, consonants are blue. </li>
+            <li> Sort bars alphabetically. </li>
+            <li> Add grid lines. </li>
+        </ul>
+
+        <h4> B-Level Functionality </h4>
+        <ul>
+            <li> Show exact value of bar when hovering over it. </li>
+        </ul>
+
+        <h4> A-Level Functionality </h4>
+        <ul>
+            <li> Show one bar at a time and smoothly grow each bar. </li>
+        </ul>
+
+    </div>
+
+    <div class="col-md-7">
+        <h2 class="page-header"> Discussion of Functionality </h2>
+        <p>
+            Most of my design decisions (changes from the <a href="http://bl.ocks.org/mbostock/3885304">tutorial source code</a>) focused on clarity. For example, the number y-axis tick labels was pre-determined, regardless of the range of the data. This resulted in a lot of non-integer tick marks, which does not make sense for count data. Thus, I specified there should be tick marks and grid lines at integers only, and no decimal places displayed. However, many other design decisions were simply to experiment with D3, e.g. thickening the y-axis line.
+        </p>
+        <p>
+            Some other changes I made were both for aesthetics and interactivity. I chose blue and gold because they are very different in both hue and intensity. When hovered over, the bars lighten and the exact value of the bar is displayed. I chose not to use a very bold tooltip (<a href="http://bl.ocks.org/Caged/6476579">example</a>) for showing the value because I felt the colors were already creating a lot of visual contrast. The grid lines already help make it clear what the value is, so it did not need to be emphasized much further.
+        </p>
+
+    </div>
+</div>
+
+
+<div class="container">
+
+<hr/>
+
+<footer>
+    <p style="text-align: center;">Griffin Okamoto &bullet; MSAN 622 Information Visualization &bullet; Spring 2015</p>
+</footer>
+
+</div><!--/.container -->
+
+<script src="../js/jquery.min.js"></script>
+<script src="../js/bootstrap.min.js"></script>
+<script src="../js/d3.min.js"></script>
+
+
+</body>
+</html>
