@@ -69,36 +69,19 @@ var svg3 = d3.select("#parallelCoordChart").append("svg")
   .append("g")
     .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
 
-var newTitles3 = {"Population": "population",
-				  "Income per Capita": "income",
-				  "Illiteracy Rate": "illiteracy",
-				  "Life Expectancy": "lifeExp",
-				  "Murders per 100k": "murder",
-				  "HS Grad Rate": "hs",
-				  "Days Below Freezing": "frost",
-				  "Area": "area"};
-
-
-d3.json("state.x77.json", function(state) {
+d3.json("state.x77.prettynames.json", function(state) {
 
   // Extract the list of dimensions and create a scale for each.
-  x3.domain(dimensions = d3.keys(newTitles3).filter(function(d) {
-  // x3.domain(dimensions = d3.keys(newTitles3).filter(function(d) {
-    return newTitles3[d] != "name" 
-    		&& newTitles3[d] != "abb"
-    		&& newTitles3[d] != "division" 
-    		&& newTitles3[d] != "region"
+  x3.domain(dimensions = d3.keys(state[0]).filter(function(d) {
+    return d != "State Name" 
+    		&& d != "State Abbreviation" 
+    		&& d != "Division" && d != "Region"
     		&& (y3[d] = d3.scale.linear()
-        			.domain(d3.extent(state, function(p) { 
-        				return +p[newTitles3[d]]; 
-        			}))
-        			.range([h, 0]));
+        .domain(d3.extent(state, function(p) { return +p[d]; }))
+        .range([h, 0]));
   }));
 
-  console.log(x3.domain())
-  console.log(y3)
-
-  // console.log(Object.keys(y3));
+  console.log(Object.keys(y3));
 
   // Add grey background lines for context.
   background3 = svg3.append("g")
@@ -121,16 +104,12 @@ d3.json("state.x77.json", function(state) {
       .data(dimensions)
     .enter().append("g")
       .attr("class", "dimension")
-      .attr("transform", 
-      	function(d) { return "translate(" + x3(d) + ")"; 
-      });
+      .attr("transform", function(d) { return "translate(" + x3(d) + ")"; });
 
   // Add an axis and title.
   g3.append("g")
       .attr("class", "axis3")
-      .each(function(d) { 
-      	d3.select(this).call(axis3.scale(y3[d])); 
-      })
+      .each(function(d) { d3.select(this).call(axis3.scale(y3[d])); })
     .append("text")
       .attr("class", "axisTitle3")
       .attr("text-anchor", "middle")
@@ -149,8 +128,7 @@ d3.json("state.x77.json", function(state) {
 
 // Returns the path for a given data point.
 function path(d) {
-  return line3(dimensions.map(function(p) { 
-  	return [x3(p), y3[p](d[newTitles3[p]])]; }));
+  return line3(dimensions.map(function(p) { return [x3(p), y3[p](d[p])]; }));
 }
 
 // Handles a brush event, toggling the display of foreground lines.
