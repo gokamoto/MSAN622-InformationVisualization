@@ -5,12 +5,31 @@
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <!-- <script src="../js/d3.min.js"></script> -->
 
+<h1 class="parallelCoordTitle"> Parallel Coordinate Chart </h1>
 <p id="parallelCoordChart"></p>
 
 <style>
 
+#parallelCoordChart svg {
+    margin: auto;
+    display: block;
+}
+
+.parallelCoordTitle {
+    font: 24px sans-serif;
+    text-align: center;
+}
+
 svg3 {
-  font: 10px sans-serif;
+	font: 10px sans-serif;
+}
+
+.legendTitle3 {
+	font: 12px sans-serif;
+}
+
+.legendRegionBox3 {
+	font: 10px sans-serif;
 }
 
 .background3 path {
@@ -22,7 +41,7 @@ svg3 {
 
 .foreground3 path {
   fill: none;
-  stroke: steelblue;
+  /*stroke: steelblue;*/
   stroke-opacity: .7;
 }
 
@@ -44,7 +63,7 @@ svg3 {
 }
 
 .axisTitle3 {
-	font: 12px sans-serif;
+    font: 10px sans-serif;
 }
 
 </style>
@@ -55,6 +74,8 @@ var m = [30, 10, 10, 10],
     w = 960 - m[1] - m[3],
     h = 500 - m[0] - m[2];
 
+var colorScale3 = d3.scale.category10();
+
 var x3 = d3.scale.ordinal().rangePoints([0, w], .5),
     y3 = {};
 
@@ -62,6 +83,10 @@ var line3 = d3.svg.line(),
     axis3 = d3.svg.axis().orient("left"),
     background3,
     foreground3;
+
+var legend3 = d3.select("#parallelCoordChart").append("svg")
+				.attr("width", 500)
+				.attr("height", 100);
 
 var svg3 = d3.select("#parallelCoordChart").append("svg")
     .attr("width", w + m[1] + m[3])
@@ -71,17 +96,54 @@ var svg3 = d3.select("#parallelCoordChart").append("svg")
 
 d3.json("state.x77.prettynames.json", function(state) {
 
-  // Extract the list of dimensions and create a scale for each.
-  x3.domain(dimensions = d3.keys(state[0]).filter(function(d) {
-    return d != "State Name" 
-    		&& d != "State Abbreviation" 
-    		&& d != "Division" && d != "Region"
-    		&& (y3[d] = d3.scale.linear()
-        .domain(d3.extent(state, function(p) { return +p[d]; }))
-        .range([h, 0]));
-  }));
+	// array of region names for legend
+    var regions = [];
+    state.filter(function(d) {
+        if (regions.indexOf(d.Region) < 0) {
+            regions.push(d.Region);
+        }
+    });
+    regions.sort(); // Sort so the colors match
+    console.log(colorScale3("North Central"));
 
-  console.log(Object.keys(y3));
+	// Add legend
+	legendRegionScale3 = d3.scale.ordinal().domain(regions).range([1,2,3,4]);
+
+	legend3.append("text")
+	    .attr("class", "legendTitle3")
+	    .attr("text-anchor", "middle")
+	    .attr("x", 250)
+	    .attr("y", 30)
+	    .text("Region");
+	var legendRegionBox3 = legend3.append("g")
+	        .attr("class", "legendRegionBox3")
+	    .selectAll(".box")
+	        .data(regions)
+	        .enter().append("g")
+	            .attr("class", "box");
+	legendRegionBox3.append("rect")
+	    .attr("y", 50)
+	    .attr("x", function(d, i) { return 100*legendRegionScale3(d)-20; })
+	    .attr("width", 12)
+	    .attr("height", 12)
+	    .style("fill", function(d) { return colorScale3(d); });
+	legendRegionBox3.append("text")
+	    .attr("text-anchor", "start")
+	    .attr("y", 60)
+	    .attr("x", function(d, i) { return 100*legendRegionScale3(d)-5; })
+	    .text(function(d) { return d; });
+
+
+	// Extract the list of dimensions and create a scale for each.
+	x3.domain(dimensions = d3.keys(state[0]).filter(function(d) {
+	return d != "State Name" 
+	        && d != "State Abbreviation" 
+	        && d != "Division" && d != "Region"
+	        && (y3[d] = d3.scale.linear()
+	    .domain(d3.extent(state, function(p) { return +p[d]; }))
+	    .range([h, 0]));
+	}));
+
 
   // Add grey background lines for context.
   background3 = svg3.append("g")
@@ -91,13 +153,17 @@ d3.json("state.x77.prettynames.json", function(state) {
     .enter().append("path")
       .attr("d", path);
 
-  // Add blue foreground lines for focus.
+  // Foreground lines are colored by region
   foreground3 = svg3.append("g")
       .attr("class", "foreground3")
     .selectAll("path")
       .data(state)
     .enter().append("path")
-      .attr("d", path);
+      .attr("d", path)
+      .attr("class", function(d) { return d["State Name"]; })
+      .style("stroke", function(d) { 
+      	return colorScale3(d.Region); })
+      .style("fill", "none");
 
   // Add a group element for each dimension.
   var g3 = svg3.selectAll(".dimension")
@@ -123,6 +189,7 @@ d3.json("state.x77.prettynames.json", function(state) {
     .selectAll("rect")
       .attr("x", -8)
       .attr("width", 16);
+
 });
 
 
