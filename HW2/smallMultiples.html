@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Import d3 -->
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<!-- <script src="../js/d3.min.js"></script> -->
+
+
+
+<h1 class="smallMultTitle"> Quality of Life in the 50 States </h1>
+<p id="smallMultLegend"></p>
+<p id="smallMultChart"></p>
+
+
+<style>
+
+
+.ranges {
+	font: 10px sans-serif;
+}
+
+.stateTitle {
+	font: 14px sans-serif;
+}
+
+.smallMultTitle {
+	font: 24px sans-serif;	
+	text-align: center;
+}
+
+.legend2 {
+	display: block;
+	margin: auto;
+	font: 12px sans-serif;
+}
+
+.smallMultChart {
+	display: block;
+	margin: auto;
+}
+
+</style>
+
+
+<script>
+
+var colors = {
+    "grey":   "#bbbbbb",
+    "blue":   "#377eb8",
+    "purple": "#984ea3",
+    "green":  "#4daf4a",
+    "orange": "#ff7f00"
+};
+
+// Chart dimensions.
+var margin2 = {top: 20, right: 50, bottom: 20, left: 50},
+    width2 = 200 - margin2.right - margin2.left,
+    height2 = 125 - margin2.top - margin2.bottom;
+
+between2 = 50;
+var legend2 = d3.select("#legend2").append("svg")
+	.attr("class", "legend2")
+	.attr("width", 3*width2 + 4*between2)
+	.attr("height", 60);
+
+var legendLines2 = legend2.append("g");
+legendLines2.append("rect")
+	.attr("x", between2)
+	.attr("y", 50)
+	.attr("width", width2)
+	.attr("height", 2)
+	.style("fill", colors.purple);
+legendLines2.append("rect")
+	.attr("x", width2 + 2*between2)
+	.attr("y", 50)
+	.attr("width", width2)
+	.attr("height", 2)
+	.style("fill", colors.orange);
+legendLines2.append("rect")
+	.attr("x", 2*width2 + 3*between2)
+	.attr("y", 50)
+	.attr("width", width2)
+	.attr("height", 2)
+	.style("fill", colors.green)
+
+var legendText2 = legend2.append("g")
+legendText2.append("text")
+	.attr("text-anchor", "middle")
+	.attr("x", between2 + .5*width2)
+	.attr("y", 40)
+	.text("Income per Capita")
+legendText2.append("text")
+	.attr("text-anchor", "middle")
+	.attr("x", 1.5*width2 + 2*between2)
+	.attr("y", 40)
+	.text("Life Expectancy")
+legendText2.append("text")
+	.attr("text-anchor", "middle")
+	.attr("x", 2.5*width2 + 3*between2)
+	.attr("y", 40)
+	.text("High School Graduation Rate");
+
+// Load the data.
+d3.json("state.x77.json", function(state) {
+
+	// Add an SVG element for each symbol, with the desired dimensions and margin.
+	var svg2 = d3.select("#smallMultChart").selectAll("svg")
+		.data(state)
+	.enter().append("svg")
+		.attr("class", function(d) { return d.name; })
+		.attr("width", width2 + margin2.left + margin2.right)
+		.attr("height", height2 + margin2.top + margin2.bottom);
+
+	// Axis lines showing range of possible values (no ticks)
+	lines2 = svg2.append("g")
+		.attr("class", "lines");
+	lines2.append("rect")
+		.attr("x", margin2.left)
+		.attr("y", margin2.top+(1/3)*height2)
+		.attr("width", width2)
+		.attr("height", 2)
+		.style("fill", colors.purple);
+	lines2.append("rect")
+		.attr("x", margin2.left)
+		.attr("y", margin2.top+(2/3)*height2)
+		.attr("width", width2)
+		.attr("height", 2)
+		.style("fill", colors.orange);
+	lines2.append("rect")
+		.attr("x", margin2.left)
+		.attr("y", margin2.top+(3/3)*height2)
+		.attr("width", width2)
+		.attr("height", 2)
+		.style("fill", colors.green);
+
+	incomeDom = d3.extent(state, function(d) { return d.income; });
+	populationDom = d3.extent(state, function(d) { return d.population; });
+	lifeExpDom = d3.extent(state, function(d) { return d.lifeExp; });
+	hsDom = d3.extent(state, function(d) { return d.hs; });
+
+	incomeScale = d3.scale.linear().domain(incomeDom).range([0, width2]);
+	populationScale = d3.scale.linear().domain(populationDom).range([0, width2]);
+	lifeExpScale = d3.scale.linear().domain(lifeExpDom).range([0, width2]);
+	hsScale = d3.scale.linear().domain(hsDom).range([0, width2]);
+
+	// Circles indicating where the state falls for each variable
+	dots2 = svg2.append("g")
+		.attr("class", "circles");
+	dots2.append("circle")
+		.attr("cx", function(d) { return margin2.left+incomeScale(d.income); })
+		.attr("cy", margin2.top+(1/3)*height2+1)
+		.attr("r", 5)
+		.style("fill", colors.purple);
+	dots2.append("circle")
+		.attr("cx", function(d) { return margin2.left+lifeExpScale(d.lifeExp); })
+		.attr("cy", margin2.top+(2/3)*height2+1)
+		.attr("r", 5)
+		.style("fill", colors.orange);
+	dots2.append("circle")
+		.attr("cx", function(d) { return margin2.left+hsScale(d.hs); })
+		.attr("cy", margin2.top+(3/3)*height2+1)
+		.attr("r", 5)
+		.style("fill", colors.green);
+
+	// State titles
+	svg2.append("text")
+		.attr("class", "stateTitle")
+		.attr("text-anchor", "middle")
+		.attr("x", (margin2.left+width2+margin2.right)/2)
+		.attr("y", margin2.top+10)
+		.text(function(d) { return d.name; });
+
+	// Maximum and minimum values for each variable at end of lines
+	incomeFormat = d3.format("$.0f");
+	lifeExpFormat = d3.format(".1f");
+	hsFormat = d3.format("%.1f")
+	ranges2 = svg2.append("g")
+		.attr("class", "ranges");
+	ranges2.append("text")
+		.attr("class", "incomeMin")
+		.attr("text-anchor", "end")
+		.attr("x", margin2.left-5)
+		.attr("y", margin2.top+(1/3)*height2+4)
+		.text(incomeFormat(incomeDom[0]*.001)+"k");
+	ranges2.append("text")
+		.attr("class", "incomeMax")
+		.attr("text-anchor", "start")
+		.attr("x", margin2.left+width2+5)
+		.attr("y", margin2.top+(1/3)*height2+4)
+		.text(incomeFormat(incomeDom[1]/1000)+"k");
+	ranges2.append("text")
+		.attr("class", "lifeExpMin")
+		.attr("text-anchor", "end")
+		.attr("x", margin2.left-5)
+		.attr("y", margin2.top+(2/3)*height2+4)
+		.text(lifeExpFormat(lifeExpDom[0]));
+	ranges2.append("text")
+		.attr("class", "lifeExpMax")
+		.attr("text-anchor", "start")
+		.attr("x", margin2.left+width2+5)
+		.attr("y", margin2.top+(2/3)*height2+4)
+		.text(lifeExpFormat(lifeExpDom[1]));
+	ranges2.append("text")
+		.attr("class", "hsMin")
+		.attr("text-anchor", "end")
+		.attr("x", margin2.left-5)
+		.attr("y", margin2.top+(3/3)*height2+4)
+		.text(hsFormat(hsDom[0]/100));
+	ranges2.append("text")
+		.attr("class", "hsMax")
+		.attr("text-anchor", "start")
+		.attr("x", margin2.left+width2+5)
+		.attr("y", margin2.top+(3/3)*height2+4)
+		.text(hsFormat(hsDom[1]/100));
+
+
+});
+
+
+</script>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Import d3 -->
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<!-- <script src="../js/d3.min.js"></script> -->
+
+
+<h1 class="bubbleChartTitle"> More School, Less Crime (The 50 States) </h1>
+<p id="bubbleChart"></p>
+
+
+<style>
+
+.bubbleChartTitle {
+	font: 24px sans-serif;
+	text-align: center;
+}
+
+.axis1 path, .axis1 line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.axis1  {
+	font: 12px sans-serif;
+}
+
+.label1 {
+	font: 12px sans-serif;
+}
+
+.legendRegionBox1 {
+	font: 10px sans-serif;	
+}
+
+.legendPopBox1 {
+	font: 10px sans-serif;
+}
+
+.legendTitle1 {
+	font: 12px sans-serif;
+}
+
+</style>
+
+
+<script>
+
+// Chart dimensions.
+var margin1 = {top: 19.5, right: 19.5, bottom: 19.5, left: 40},
+    width1 = 800 - margin1.right - margin1.left,
+    height1 = 500 - margin1.top - margin1.bottom,
+    radiusMax1 = 20,
+    axisLabelPad1 = 10;
+
+// Create the SVG container
+var svg1 = d3.select("#bubbleChart").append("svg")
+	.attr("width", width1 + margin1.left + margin1.right)
+    .attr("height", height1 + margin1.top + margin1.bottom)
+    .attr("transform", "translate(" + margin1.left + "," + margin1.top + ")");
+
+// Load the data.
+d3.json("state.x77.json", function(state) {
+
+	// Calculate the maximum and minimum of the relevant variables,
+	// Then add 10% padding to each end of the x,y ranges for extra space
+	// These are the domains for the scales
+	yDom1 = d3.extent(state, function(d) { return d.murder; });
+	yDom1 = [d3.round(yDom1[0]-0.1*(yDom1[1]-yDom1[0])), 
+			d3.round(yDom1[1]+0.1*(yDom1[1]-yDom1[0]))];
+	xDom1 = d3.extent(state, function(d) { return d.hs; });
+	xDom1 = [d3.round(xDom1[0]-0.1*(xDom1[1]-xDom1[0])), 
+			d3.round(xDom1[1]+0.1*(xDom1[1]-xDom1[0]))];
+	rDom1 = d3.extent(state, function(d) { return d.population; });
+
+	// Scales for x, y, radius, and colors
+	var radiusScale1 = d3.scale.sqrt()
+			.domain(rDom1)
+			.range([0, radiusMax1]),
+		yScale1 = d3.scale.linear()
+			.domain(yDom1)
+			.range([height1-margin1.bottom, margin1.bottom]),
+		preScale1 = d3.scale.linear().domain(xDom1).range([0,1]),
+		xScale1 = d3.scale.linear()
+			.domain([0, 1])
+			.range([margin1.left, margin1.left+width1]),
+		colorScale1 = d3.scale.category10();
+
+	// The x & y axes.
+	var xAxis1 = d3.svg.axis().scale(xScale1).orient("bottom")
+					.ticks(12).tickFormat(d3.format("%")),
+    	yAxis1 = d3.svg.axis().scale(yScale1).orient("left").ticks(12);
+
+    // Add the x-axis.
+	svg1.append("g")
+	    .attr("class", "x axis1")
+	    .attr("transform", "translate(0," + (height1-margin1.bottom) + ")")
+	    .call(xAxis1);
+
+	// Add the y-axis.
+	svg1.append("g")
+	    .attr("class", "y axis1")
+	    .attr("transform", "translate(" + (margin1.left) + "," + 0 + ")")
+	    .call(yAxis1);
+
+	// Add an x-axis label.
+	svg1.append("text")
+	    .attr("class", "x label1")
+	    .attr("text-anchor", "end")
+	    .attr("x", margin1.left+width1)
+	    .attr("y", height1-margin1.bottom-axisLabelPad1)
+	    .text("High School Graduation Rate");
+
+	// Add a y-axis label.
+	svg1.append("text")
+	    .attr("class", "y label1")
+	    .attr("text-anchor", "end")
+	    .attr("y", margin1.left+2*axisLabelPad1)
+	    .attr("x", -margin1.top)
+	    .attr("transform", "rotate(-90)")
+	    .text("Murders per 100k Population");
+
+	// Defines a sort order so that the smallest dots are drawn on top.
+  	function order(a, b) {
+    	return b.population - a.population;
+	}
+
+	// Add a dot per state. 
+	var dots1 = svg1.append("g")
+			.attr("class", "dots")
+		.selectAll(".dot")
+    		.data(state)
+    		.enter().append("circle")
+    		.attr("class", function(d) { return d.name; })
+     		.attr("cx", function(d) { return xScale1(preScale1(d.hs)); })
+     		.attr("cy", function(d) { return yScale1(d.murder); })
+     		.attr("r", function(d) { return radiusScale1(d.population); })
+     		.style("fill", function(d) { return colorScale1(d.region); })
+     		.attr("opacity", 0.8)
+     		.sort(order);
+    
+    // array of region names for legend
+    var regions = [];
+    state.filter(function(d) {
+    	if (regions.indexOf(d.region) < 0) {
+    		regions.push(d.region);
+    	}
+    });
+    regions.sort(); // Sort so the colors match
+
+    // Add legend:
+    // Create a group called legendBox, and append a group called box
+    // to legendBox for every data point
+    // Last thing selected is what box returns
+    legendRegionScale1 = d3.scale.ordinal().range([1,2,3,4]);
+    svg1.append("text")
+    	.attr("class", "legendTitle1")
+		.attr("text-anchor", "end")
+ 		.attr("x", margin1.left+width1)
+ 		.attr("y", margin1.top)
+ 		.text("Region");
+    var legendRegionBox1 = svg1.append("g")
+     		.attr("class", "legendRegionBox1")
+     	.selectAll(".box")
+     		.data(regions)
+     		.enter().append("g")
+     			.attr("class", "box");
+    legendRegionBox1.append("rect")
+     	.attr("x", margin1.left+width1-12)
+		.attr("y", function(d, i) { return 10+20*legendRegionScale1(d); })
+		.attr("width", 12)
+		.attr("height", 12)
+		.style("fill", function(d) { return colorScale1(d); });
+    legendRegionBox1.append("text")
+     	.attr("text-anchor", "end")
+     	.attr("x", margin1.left+width1-15)
+     	.attr("y", function(d, i) { return 10+20*legendRegionScale1(d)+11; })
+     	.text(function(d) { return d; });
+
+    console.log(rDom1)
+    var pops1 = [20000, 10000, 5000, 2500, 1000];
+    var between2 = 10;
+
+    svg1.append("text")
+    	.attr("class", "legendTitle1")
+    	.attr("text-anchor", "middle")
+    	.attr("x", margin1.left + width1 - 20)
+    	.attr("y", margin1.top + .25*height1)
+    	.text("Population");
+    var legendPopBox1 = svg1.append("g")
+    		.attr("class", "legendPopBox1")
+    	.selectAll(".legendDot")
+    		.data(pops1)
+    		.enter().append("g")
+    			.attr("class", "legendDot");
+    legendPopBox1.append("circle")
+    	.attr("cx", margin1.left + width1 - 20)
+    	.attr("cy", function(d, i) { 
+    		return margin1.top + .6*height1 + 10*i - 7*radiusScale1(d) + 15; 
+    	})
+    	.attr("r", function(d) { return radiusScale1(d); });
+    legendPopBox1.append("text")
+    	.attr("text-anchor", "middle")
+    	.attr("x", margin1.left + width1 - 20)
+    	.attr("y", function(d, i) { 
+    		return margin1.top + .6*height1 + 10*i - 8*radiusScale1(d) + 13; 
+    	})
+		.text(function(d) { return d; });
+
+});
+
+</script>
