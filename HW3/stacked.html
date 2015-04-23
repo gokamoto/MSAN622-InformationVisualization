@@ -27,6 +27,12 @@ body {
   text-anchor: end;
 }
 
+.brush .extent {
+  stroke: #fff;
+  fill-opacity: .125;
+  shape-rendering: crispEdges;
+}
+
 </style>
 
 
@@ -38,8 +44,8 @@ var margin = {top: 10, right: 10, bottom: 100, left: 40},
     height = 500 - margin.top - margin.bottom,
     height2 = 500 - margin2.top - margin2.bottom;
 
-var parseDate = d3.time.format("%y-%b-%d").parse,
-    formatPercent = d3.format(".0%");
+var parseDate = d3.time.format("%b %Y").parse;
+    // formatPercent = d3.format(".0%");
 
 var x = d3.time.scale().range([0, width]),
     x2 = d3.time.scale().range([0, width]),
@@ -62,15 +68,26 @@ var brush = d3.svg.brush()
 //     .y0(height)
 //     .y1(function(d) { return y(d.y0 + d.y); });
 var area = d3.svg.area()
-    .x(function(d) { return x(d.date); })
-    .y0(function(d) { return y(d.y0); })
+    // .x(function(d) { return x(d.date); })
+    .x(function(d) {
+        var result = x(d.date);
+        if (isNaN(result)) {
+            console.log("x", d.date, result);
+        }
+        return result;
+    })
+    .y0(function(d) { 
+    	var result = y(d.y0);
+    	if (isNaN(result)) {
+            console.log("y0", d.date, result);
+        }
+        return result; })
     .y1(function(d) { return y(d.y0 + d.y); });
 
 var area2 = d3.svg.area()
     // .interpolate("monotone")
     .x(function(d) { return x2(d.date); })
-    // .y0(function(d) {return y2(d.y0); })
-    .y0(height2)
+    .y0(function(d) { return y2(d.y0); })
     .y1(function(d) { return y2(d.y0 + d.y); });
 
 var stack = d3.layout.stack()
@@ -103,6 +120,10 @@ d3.json("seatbelts.json", function(error, data) {
 		return colorVars.indexOf(key) > -1 ; 
 	}));
 
+	data.forEach(function(d) {
+		d.date = dateformat(d.month);
+	});
+
 	x.domain(d3.extent(data, function(d) { return d.date; }));
 	y.domain([0, d3.max(data, function(d) { 
 		return d3.round(1.1*(d.drivers + d.rear + d.front)/1000, 0)*1000; 
@@ -110,19 +131,23 @@ d3.json("seatbelts.json", function(error, data) {
 	x2.domain(x.domain());
 	y2.domain(y.domain());
 
-	data.forEach(function(d) {
-		d.date = dateformat(d.month);
-	});
-
-
 	var browsers = stack(color.domain().map(function(name) {
 		return {
 			name: name,
 			values: data.map(function(d) {
-			return {date: d.date, y: d[name]};
+			return {date: d.date, y: +d[name]};
 			})
 		};
 	}));
+
+	focus.selectAll("path")
+		.data(browsers)
+		.enter().append("path")
+			.attr("clip-path", "url(#clip)")
+			.attr("d", function(d) { return area(d.values); })
+			.attr('class', 'focus')
+			.style("fill", function(d) { return color(d.name); });
+
 
 	focus.append("g")
 		.attr("class", "x axis")
@@ -133,16 +158,17 @@ d3.json("seatbelts.json", function(error, data) {
 		.attr("class", "y axis")
 		.call(yAxis);
 
-	var browser = focus.selectAll(".browser")
-		.data(browsers)
-	.enter().append("g")
-		.attr("class", "browser");
+
+	// var browser = focus.selectAll(".browser")
+	// 	.data(browsers)
+	// .enter().append("g")
+	// 	.attr("class", "browser");
 
 
-	browser.append("path")
-		.attr("class", "area")
-		.attr("d", function(d) { return area(d.values); })
-		.style("fill", function(d) { return color(d.name); });
+	// browser.append("path")
+	// 	.attr("class", "area")
+	// 	.attr("d", function(d) { return area(d.values); })
+	// 	.style("fill", function(d) { return color(d.name); });
 
 	
 // var browser2 = context.selectAll(".browser")
@@ -155,18 +181,26 @@ d3.json("seatbelts.json", function(error, data) {
   //     .attr("d", function(d) { return area2(d.values); })
   //     .style("fill", function(d) { return color(d.name); });
 
+	context.selectAll("path")
+		.data(browsers)
+		.enter().append("path")
+		.attr("clip-path", "url(#clip)")
+		.attr("d", function(d) { return area2(d.values); })
+		.attr('class', 'focus')
+		.style("fill", function(d) { return color(d.name); });
 
-	// context.append("g")
-	// 	.attr("class", "x axis")
-	// 	.attr("transform", "translate(0," + height2 + ")")
-	// 	.call(xAxis2);
 
-	// context.append("g")
-	// 	.attr("class", "x brush")
-	// 	.call(brush)
-	// .selectAll("rect")
-	// 	.attr("y", -6)
-	// 	.attr("height", height2 + 7);
+	context.append("g")
+		.attr("class", "x axis")
+		.attr("transform", "translate(0," + height2 + ")")
+		.call(xAxis2);
+
+	context.append("g")
+		.attr("class", "x brush")
+		.call(brush)
+	.selectAll("rect")
+		.attr("y", -6)
+		.attr("height", height2 + 7);
 
 });
 
@@ -180,7 +214,7 @@ function dateformat(dt) {
 
 function brushed() {
 	x.domain(brush.empty() ? x2.domain() : brush.extent());
-	focus.select(".area").attr("d", area);
+	focus.selectAll("path.focus").attr("d", function(d) { return area(d.values); });
 	focus.select(".x.axis").call(xAxis);
 }
 
