@@ -8,10 +8,37 @@
 
 
 <h1 class="calendarChartTitle"> Automobile Deaths in the U.K. (1969-1984) </h1>
+
+<p id="filtercaption"> Only view months with at least this many deaths: </p>
+
+<form id="filter" name="myform" onSubmit="return handleClick()">
+  <input name="Submit"  type="submit" value="Filter" >
+  <input type="text" id="myVal" placeholder="Add number here&hellip;">
+</form>
+
+<br>
+
+<form id="reset" onSubmit="return draw(0)">
+  <input name="Submit" type="submit" value="Reset" >
+</form>
+
 <p id="calendarChart"></p>
 
 
 <style>
+
+#filtercaption {
+  font-size: 12px;
+  text-align: center;
+}
+
+#filter {
+  text-align: center;
+}
+
+#reset {
+  text-align: center;
+}
 
 #calendarChart svg {
     margin: auto;
@@ -93,8 +120,8 @@ var data;
 
 var cellSize = 30,
     width = 14*cellSize,
-    height = 18*cellSize,
-    margin = {top: 20, right: 10, bottom: 10, left: 10};
+    height = 20*cellSize,
+    margin = {top: 30, right: 10, bottom: 10, left: 10};
 
 var day = d3.time.format("%w"),
     week = d3.time.format("%U"),
@@ -185,7 +212,7 @@ var yearGroup = years.selectAll("text")
 
 d3.json("seatbelts.json", function(error, json) {
 
-console.log(json);
+// console.log(json);
 
 	data = d3.nest()
 	    .key(function(d) { return d.month; })
@@ -197,13 +224,13 @@ console.log(json);
 	    .map(json);
 
 
-console.log(data);
+// console.log(data);
 
 	rect.attr("class", function(d) { 
 			return "RdYlGn day " + color(data[d]); 
 		})
 		.style("fill", function(d) { 
-			return color(data[d].total); 
+			return color(data[d].total);
 		})
     .select("title")
       .text(function(d) { return d + ": " + new Date(d); });
@@ -215,6 +242,42 @@ function monthyear(dt) {
 	dt2 = new Date(dt);
 	dtUTC = new Date(dt2.getUTCFullYear(), dt2.getUTCMonth(), dt2.getUTCDate());
 	return monthyearFormat(dtUTC);
+}
+
+
+function handleClick(event){
+    console.log(document.getElementById("myVal").value)
+    draw(document.getElementById("myVal").value)
+    return false;
+}
+
+var duration = 500;
+
+function draw(val){
+    var notHighlight = svg.selectAll("rect").filter(function(d) { 
+      return data[d].total < val; 
+    })
+      .transition()
+        .duration(duration)
+        .style("fill", "lightgray");
+
+    var Highlight = svg.selectAll("rect").filter(function(d) { 
+      return data[d].total >= val; 
+    })
+      .transition()
+        .duration(duration)
+        .style("fill", function(d) { 
+          return color(data[d].total);
+        });
+
+    return false;
+    // console.log(notHighlight);
+
+    // d3.select("body").select("ul").append("li");
+    // dataset.push(val);
+    // var p = d3.select("body").selectAll("li")
+    // .data(dataset)
+    // .text(function(d,i){return i + ": " + d;})
 }
 
 </script>
