@@ -4,13 +4,23 @@
 <!-- Import d3 -->
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <!-- <script src="../js/d3.min.js"></script> -->
+<!-- <script src="https://github.com/gokamoto/MSAN622-InformationVisualization/tree/gh-pages/js/legend.js"></script> -->
 
 
-<!-- <h1 class="bubbleChartTitle"> More School, Less Crime (The 50 States) </h1> -->
+<h1 class="stackedChartTitle"> Automobile Deaths by Driver/Passenger Status </h1>
 <p id="stackedChart"></p>
 
 
 <style>
+
+.stackedChartTitle {
+	text-align: center;
+}
+
+#stackedChart svg {
+	display: block;
+	margin: auto;
+}
 
 body {
   font: 10px sans-serif;
@@ -52,7 +62,8 @@ var x = d3.time.scale().range([0, width]),
     y = d3.scale.linear().range([height, 0]),
     y2 = d3.scale.linear().range([height2, 0]);
 
-var color = d3.scale.category20();
+// var color = d3.scale.category10();
+var color = d3.scale.ordinal().range(["#a6cee3","#fb9a99", "#b2df8a"]);
 
 var xAxis = d3.svg.axis().scale(x).orient("bottom"),
     xAxis2 = d3.svg.axis().scale(x2).orient("bottom"),
@@ -146,7 +157,8 @@ d3.json("seatbelts.json", function(error, data) {
 			.attr("clip-path", "url(#clip)")
 			.attr("d", function(d) { return area(d.values); })
 			.attr('class', 'focus')
-			.style("fill", function(d) { return color(d.name); });
+			.style("fill", function(d) { return color(d.name); })
+			.attr("data-legend",function(d) { return d.name});
 
 
 	focus.append("g")
@@ -158,6 +170,45 @@ d3.json("seatbelts.json", function(error, data) {
 		.attr("class", "y axis")
 		.call(yAxis);
 
+
+	var driverStatus = ["drivers", "front", "rear"];
+	var driverLabels = {"drivers": "Automobile Drivers",
+						"front": "Front Passengers",
+						"rear": "Rear Passengers"};
+
+	var legend = focus.append("g")
+		.attr("class", "legend")
+		.selectAll(".box")
+		.data(driverStatus)
+		.enter().append("g")
+            .attr("class", "box");
+
+    legend.append("rect")
+    	.attr("x", function(d) {
+    		mid = 0.5*(margin.left + width);
+    		idx = driverStatus.indexOf(d);
+    		return mid + (idx-2)*120 + 35;
+    	})
+    	.attr("y", 0)
+    	.attr("width", 10)
+    	.attr("height", 10)
+    	.style("fill", function(d) { return color(d); });
+
+    legend.append("text")
+    	.attr("text-anchor", "start")
+    	.attr("x", function(d) {
+    		mid = 0.5*(margin.left + width);
+    		idx = driverStatus.indexOf(d);
+    		return mid + (idx-2)*120 + 50;
+    	})
+    	.attr("y", 8)
+    	.text(function(d) { return driverLabels[d]; });
+
+	// legend = svg.append("g")
+ //    .attr("class","legend")
+ //    .attr("transform","translate(50,30)")
+ //    .style("font-size","12px")
+ //    .call(d3.legend);
 
 	// var browser = focus.selectAll(".browser")
 	// 	.data(browsers)
