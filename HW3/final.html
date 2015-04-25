@@ -110,16 +110,18 @@
 #calendarChart svg {
     margin: auto;
     display: block;
+    font: sans-serif;
+    shape-rendering: crispEdges;
 }
 
 .calendarChartTitle {
   text-align: center;
 }
 
-body {
+/*body {
   font: sans-serif;
   shape-rendering: crispEdges;
-}
+}*/
 
 .month rect {
   fill: #fff;
@@ -208,7 +210,6 @@ var tip = d3.tip()
   .attr('class', 'd3-tip')
   .offset([-10, 0])
   .html(function(d) {
-  	console.log(d);
     return "<div style=\"color:gold\"><strong>" + monthyear(d) + "</strong></div>"
     + "<div><strong>Total Killed:</strong>"
     + " <span>" + data1[d].total + "</span></div>"
