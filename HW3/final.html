@@ -64,21 +64,53 @@
 
 <div class="container">
     <div class="myheader">
-        <h1>Homework 1: Letter Count Bar Chart</h1>
+        <h1>Homework 3: Interactive Time Series Visualization</h1>
     </div>
-    <p>Add a search term to the URL and refresh the page to see a bar chart of the (alpha-numeric) characters in your search string! For example, append "?UniversityofSanFrancisco" the end of the URL. </p>
+    <!-- <p>Add a search term to the URL and refresh the page to see a bar chart of the (alpha-numeric) characters in your search string! For example, append "?UniversityofSanFrancisco" the end of the URL. </p> -->
     <p> Griffin Okamoto </p>
-    <a href="https://github.com/gokamoto/MSAN622-InformationVisualization/tree/gh-pages/HW1">Source Code </a>
+    <a href="https://github.com/gokamoto/MSAN622-InformationVisualization/tree/gh-pages/HW3"> Source Code </a>
     
 </div>
 
+
+<div class="container">
+
+	<h3 class="page-header"> How to Interact </h2>
+
+    <div class="col-md-5">
+
+        <p><strong> Calendar Heatmap </strong></p>
+        <p>
+            Hover over a square to see details about how many drivers and passengers were killed or seriously injured in that particular month. You can also input a value into the search bar and click "filter" to only color months that had more than that number of deaths/serious injuries. Click "reset" to return to the original plot with all of the squares colored.
+        </p>
+      
+    </div>
+
+	<div class="col-md-1">
+	</div>
+
+    <div class="col-md-5">
+
+        <p><strong> Stacked Area Plot </strong></p>
+        <p>
+            Click and drag on the bottom "context" plot to select a time range (indicated by the gray box that appears) to display on the larger "focus" plot. Once selected, drag the gray box to move the range earlier or later in time. To reset the selection, click on the bottom context plot outside of the gray selection box.
+        </p>
+       
+    </div>
+</div>
+
+<br> </br>
+<hr> </hr>
+<br> </br>
 
 <!-- CALENDAR HEATMAP -->
 
 <script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
 
-<h2 class="calendarChartTitle"> Automobile Deaths in the U.K. (1969-1984) </h2>
+<h3 class="calendarChartTitle"> Automobile Deaths and Series Injuries in the U.K. </h3>
+<h4 class="calendarChartTitle"> (1969-1984) </h4>
 
+<br>
 <p id="filtercaption"> Only view months with at least this many deaths: </p>
 
 <form id="filter" name="myform" onSubmit="return handleClick()" onReset="draw(0)" action="#">
@@ -95,12 +127,13 @@
 <style>
 
 #filtercaption {
-  font-size: 12px;
+  font-size: 10px;
   text-align: center;
 }
 
 #filter {
   text-align: center;
+  font-size: 10px;
 }
 
 #reset {
@@ -110,7 +143,7 @@
 #calendarChart svg {
     margin: auto;
     display: block;
-    font: sans-serif 10px;
+    font-size: 10px;
     shape-rendering: crispEdges;
 }
 
@@ -134,8 +167,8 @@
 
 .d3-tip {
   line-height: 1;
-  /*font-weight: bold;*/
-  padding: 12px;
+  font-size: 10px;
+  padding: 10px;
   background: rgba(0, 0, 0, 0.8);
   color: #fff;
   border-radius: 2px;
@@ -211,7 +244,7 @@ var tip = d3.tip()
   .offset([-10, 0])
   .html(function(d) {
     return "<div style=\"color:gold\"><strong>" + monthyear(d) + "</strong></div>"
-    + "<div><strong>Total Killed:</strong>"
+    + "<div><strong>Total Killed/Injured:</strong>"
     + " <span>" + data1[d].total + "</span></div>"
     + " <div><strong>Drivers:</strong>"
     + " <span>" + data1[d].drivers + "</span></div>"
@@ -357,7 +390,7 @@ function draw(val){
     rectGroup1.selectAll("rect").classed("gray", false);
 
     var notHighlight = rectGroup1.selectAll("rect").filter(function(d) { 
-      return data[d].total < val; 
+      return data1[d].total < val; 
     })
       .classed("gray", true);
 
@@ -366,10 +399,12 @@ function draw(val){
 
 </script>
 
+<hr> </hr>
+<br></br>
 
 <!-- STACKED AREA -->
 
-<h2 class="stackedChartTitle"> Automobile Deaths by Driver/Passenger Status </h2>
+<h3 class="stackedChartTitle"> Automobile Deaths and Serious Injuries by Driver/Passenger Status </h3>
 <p id="stackedChart"></p>
 
 
@@ -563,34 +598,6 @@ d3.json("seatbelts.json", function(error, data) {
     	.attr("y", 8)
     	.text(function(d) { return driverLabels[d]; });
 
-	// legend = svg.append("g")
- //    .attr("class","legend")
- //    .attr("transform","translate(50,30)")
- //    .style("font-size","12px")
- //    .call(d3.legend);
-
-	// var browser = focus.selectAll(".browser")
-	// 	.data(browsers)
-	// .enter().append("g")
-	// 	.attr("class", "browser");
-
-
-	// browser.append("path")
-	// 	.attr("class", "area")
-	// 	.attr("d", function(d) { return area(d.values); })
-	// 	.style("fill", function(d) { return color(d.name); });
-
-	
-// var browser2 = context.selectAll(".browser")
-  //     .data(browsers)
-  //   .enter().append("g")
-  //     .attr("class", "browser");
-
-  // browser2.append("path")
-  //     .attr("class", "area")
-  //     .attr("d", function(d) { return area2(d.values); })
-  //     .style("fill", function(d) { return color(d.name); });
-
 	context.selectAll("path")
 		.data(browsers)
 		.enter().append("path")
@@ -636,46 +643,54 @@ function type(d) {
 </script>
 
 
-
+<br> </br>
 
 <!-- List of Functionality -->
 
-<div class="row">
-    <div class="col-md-5">
+<div class="container">
 
-        <h2 class="page-header"> List of Functionality </h2>
+	<div class="col-md-12">
+	<h3 class="page-header"> Data Preprocessing </h3>
+        <p>
+            I used R to obtain the Seatbelts data from the datasets package. However, I could not find a way to extract the dates associated with each row, so I manually created a sequence of dates and appended it to a data frame. Then I exported a data frame as a JSON file, which was an array of objects with variable names as keys with their associated value.
+        </p>
+	</div>
+</div>
 
-        <h4> C-Level Functionality </h4>
+<div class="container">
+
+    <div class="col-md-4">
+
+        <h3 class="page-header"> List of Functionality </h3>
+
+        <h4> Basic Functionality </h4>
         <ul>
-            <li> Get query string from URL. </li>
-            <li> Create bar chart of the letter counts using D3 in an SVG. </li>
-            <li> Remove decimal places on y-axis tick marks. </li>
-            <li> Reduce y-axis tick marks to integers only. </li>
-            <li> Thicken y-axis line to 2px. </li>
-            <li> Change the colors of the bars: vowels are gold, consonants are blue. </li>
-            <li> Sort bars alphabetically. </li>
-            <li> Add grid lines. </li>
+            <li> Stacked area plot </li>
+            <li> Calendar heatmap </li>
         </ul>
 
-        <h4> B-Level Functionality </h4>
+        <h4> Moderate Functionality </h4>
         <ul>
-            <li> Show exact value of bar when hovering over it. </li>
+            <li> Panning on stacked area plot </li>
+            <li> Hover to see tooltip details on calendar heatmap </li>
         </ul>
 
-        <h4> A-Level Functionality </h4>
+        <h4> Advanced Functionality </h4>
         <ul>
-            <li> Show one bar at a time and smoothly grow each bar. </li>
+            <li> Brushing on stacked area plot </li>
+            <li> Filtering on calendar heatmap (via form) </li>
         </ul>
 
     </div>
 
-    <div class="col-md-7">
-        <h2 class="page-header"> Discussion of Functionality </h2>
+    <div class="col-md-8">
+
+        <h3 class="page-header"> Discussion of Functionality </h3>
         <p>
-            Most of my design decisions (changes from the <a href="http://bl.ocks.org/mbostock/3885304">tutorial source code</a>) focused on clarity. For example, the number y-axis tick labels was pre-determined, regardless of the range of the data. This resulted in a lot of non-integer tick marks, which does not make sense for count data. Thus, I specified there should be tick marks and grid lines at integers only, and no decimal places displayed. However, many other design decisions were simply to experiment with D3, e.g. thickening the y-axis line.
+            For the calendar heatmap, I originally started with the daily calendar view (tutorial), but then realized we had monthly data and that this was not very data dense. So I created a smaller heatmap with only one square per month. The first important consideration was the color scale to use. I found a very nice range of reds on color brewer (which also changes hue subtly), and thought this was suitable to represent deaths/injuries. I chose to implement filtering in this plot over the stacked area plot, but instead of completely removing the filtered-out squares, I just had them fade into the background. I added the legend at the end, not only for clarity but so that users would have a good frame of reference when using the filtering functionality.
         </p>
         <p>
-            Some other changes I made were both for aesthetics and interactivity. I chose blue and gold because they are very different in both hue and intensity. When hovered over, the bars lighten and the exact value of the bar is displayed. I chose not to use a very bold tooltip (<a href="http://bl.ocks.org/Caged/6476579">example</a>) for showing the value because I felt the colors were already creating a lot of visual contrast. The grid lines already help make it clear what the value is, so it did not need to be emphasized much further.
+            For the stacked area plot, I followed nice tutorial by Mike Bostock for the brushing + panning functionality. The reason I chose stacked area was that I wanted to show data that was detailed enough to warrant the use of a brushing tool. The color scheme was very difficult to choose, because the top area is very small and couldn't be too light compared to the other areas. However, when I tried to give it a much darker color, it also looked odd. So eventually I chose 3 colors from a color brewer palette that are equal in intensity but very different in hue.
         </p>
 
     </div>
