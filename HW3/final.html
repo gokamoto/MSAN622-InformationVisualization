@@ -117,7 +117,7 @@
 }
 
 body {
-  font: 10px sans-serif;
+  font: sans-serif;
   shape-rendering: crispEdges;
 }
 
@@ -208,6 +208,7 @@ var tip = d3.tip()
   .attr('class', 'd3-tip')
   .offset([-10, 0])
   .html(function(d) {
+  	console.log(d);
     return "<div style=\"color:gold\"><strong>" + monthyear(d) + "</strong></div>"
     + "<div><strong>Total Killed:</strong>"
     + " <span>" + data1[d].total + "</span></div>"
@@ -380,10 +381,6 @@ function draw(val){
 #stackedChart svg {
 	display: block;
 	margin: auto;
-}
-
-body {
-  font: 10px sans-serif;
 }
 
 .axis path,
@@ -695,7 +692,7 @@ function type(d) {
 
 <script src="../js/jquery.min.js"></script>
 <script src="../js/bootstrap.min.js"></script>
-<script src="../js/d3.min.js"></script>
+<!-- <script src="../js/d3.min.js"></script> -->
 
 
 </body>
