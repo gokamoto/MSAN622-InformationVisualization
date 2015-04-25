@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>MSAN 622 Information Visualization</title>
+
+<link href="../css/bootstrap.min.css" rel="stylesheet">
+<link href="../css/bootstrap-theme.min.css" rel="stylesheet">
+
+<style type="text/css">
+
+    body {
+        padding-top: 50px;
+        padding-bottom: 20px;
+        padding-left: 50px;
+        padding-right: 50px;
+    }
+
+    .myheader {
+        font-size: 30px;
+    }
+
+</style>
+
+
+</head>
+
+<body>
+
+<!-- Fixed Navbar -->
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle Navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://gokamoto.github.io/MSAN622-InformationVisualization">MSAN 622</a>
+        </div>
+
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="http://gokamoto.github.io/MSAN622-InformationVisualization#homework">Homework</a></li>
+                <li><a href="http://gokamoto.github.io/MSAN622-InformationVisualization#project">Project</a></li>
+                <li><a href="http://gokamoto.github.io/MSAN622-InformationVisualization#participation">Participation</a></li>
+            </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="http://gokamoto.github.io/MSAN622-InformationVisualization#about">About</a></li>
+                <li><a href="http://gokamoto.github.io/MSAN622-InformationVisualization#contact">Contact</a></li>
+            </ul>
+        </div><!--/.nav-collapse -->
+    </div>
+</nav>
+
+<div class="container">
+    <div class="myheader">
+        <h1>Homework 1: Letter Count Bar Chart</h1>
+    </div>
+    <p>Add a search term to the URL and refresh the page to see a bar chart of the (alpha-numeric) characters in your search string! For example, append "?UniversityofSanFrancisco" the end of the URL. </p>
+    <p> Griffin Okamoto </p>
+    <a href="https://github.com/gokamoto/MSAN622-InformationVisualization/tree/gh-pages/HW1">Source Code </a>
+    
+</div>
+
+
+<!-- CALENDAR HEATMAP -->
+
+<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+
+<h1 class="calendarChartTitle"> Automobile Deaths in the U.K. (1969-1984) </h1>
+
+<p id="filtercaption"> Only view months with at least this many deaths: </p>
+
+<form id="filter" name="myform" onSubmit="return handleClick()" onReset="draw(0)" action="#">
+  <input type="text" id="myVal" placeholder="Add number here&hellip;">
+  <input name="Submit"  type="submit" value="Filter">
+  <br><br>
+  <input name="reset" type="reset" value="Reset" >
+</form>
+
+
+<p id="calendarChart"></p>
+
+
+<style>
+
+#filtercaption {
+  font-size: 12px;
+  text-align: center;
+}
+
+#filter {
+  text-align: center;
+}
+
+#reset {
+  text-align: center;
+}
+
+#calendarChart svg {
+    margin: auto;
+    display: block;
+}
+
+.calendarChartTitle {
+  text-align: center;
+}
+
+body {
+  font: 10px sans-serif;
+  shape-rendering: crispEdges;
+}
+
+.month rect {
+  fill: #fff;
+  transition: fill 0.5s;
+}
+
+.gray {
+  fill: #E8E8E8 !important;
+}
+
+.d3-tip {
+  line-height: 1;
+  /*font-weight: bold;*/
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border-radius: 2px;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+  box-sizing: border-box;
+  display: inline;
+  font-size: 10px;
+  width: 100%;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.8);
+  content: "\25BC";
+  position: absolute;
+  text-align: center;
+}
+
+/* Style northward tooltips differently */
+.d3-tip.n:after {
+  margin: -1px 0 0 0;
+  top: 100%;
+  left: 0;
+}
+
+.legendTitle {
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.q3-11{fill:rgb(253,174,97);}
+
+.RdYlGn .q0-11{fill:rgb(165,0,38);}
+.RdYlGn .q1-11{fill:rgb(215,48,39);}
+.RdYlGn .q2-11{fill:rgb(244,109,67);}
+.RdYlGn .q3-11{fill:rgb(253,174,97);}
+.RdYlGn .q4-11{fill:rgb(254,224,139);}
+.RdYlGn .q5-11{fill:rgb(255,255,191);}
+.RdYlGn .q6-11{fill:rgb(217,239,139);}
+.RdYlGn .q7-11{fill:rgb(166,217,106);}
+.RdYlGn .q8-11{fill:rgb(102,189,99);}
+.RdYlGn .q9-11{fill:rgb(26,152,80);}
+.RdYlGn .q10-11{fill:rgb(0,104,55);}
+
+</style>
+
+
+<script>
+
+var data1;
+
+var cellSize1 = 30,
+    margin1 = {top: 30, right: 50, bottom: 10, left: 83}
+    width1 = 24*cellSize1 - margin1.left - margin1.right,
+    height1 = 20*cellSize1 - margin1.top - margin1.bottom;
+
+var day1 = d3.time.format("%w"),
+    week1 = d3.time.format("%U"),
+    month1 = d3.time.format("%m"),
+    year1 = d3.time.format("%y"),
+    percent1 = d3.format(".1%"),
+    format1 = d3.time.format("%Y-%m-%d");
+
+var color1 = d3.scale.quantize()
+    .domain([1700, 4500])
+    .range(["#fee0d2","#fcbba1","#fc9272","#fb6a4a","#ef3b2c","#cb181d","#a50f15","#67000d"]);
+
+console.log(color1(4157));
+
+
+var tip = d3.tip()
+  .attr('class', 'd3-tip')
+  .offset([-10, 0])
+  .html(function(d) {
+    return "<div style=\"color:gold\"><strong>" + monthyear(d) + "</strong></div>"
+    + "<div><strong>Total Killed:</strong>"
+    + " <span>" + data1[d].total + "</span></div>"
+    + " <div><strong>Drivers:</strong>"
+    + " <span>" + data1[d].drivers + "</span></div>"
+    + " <div><strong>Front-Seat:</strong>"
+    + " <span>" + data1[d].front + "</span></div>"
+    + " <div><strong>  Rear-Seat:</strong>"
+    + " <span>" + data1[d].rear + "</span></div>"
+    ;
+  })
+
+
+var svg1 = d3.select("#calendarChart").append("svg")
+    .data(d3.range(1969, 1980))
+    .attr("width", width1)
+    .attr("height", height1)
+    .attr("class", "RdYlGn month");
+    
+svg1.call(tip);
+
+var rectGroup1 = svg1.append("g")
+  .attr("class", "monthGroup");
+
+var rect1 = rectGroup1.selectAll(".month")
+    .data(function(d) { 
+      return d3.time.months(new Date(d, 0, 1), 
+                            new Date(d+(1984-1969), 12, 1)); })
+    .enter().append("rect")
+    .attr("class", "month")
+    .attr("width", cellSize1)
+    .attr("height", cellSize1)
+    .attr("x", function(d) { return margin1.left + month1(d) * cellSize1; })
+    .attr("y", function(d) { return (year1(d)-69) * cellSize1 + margin1.top; })
+    .style("fill", "white")
+    .style("stroke", "#F5F5F5")
+    .datum(format1)
+    .on('mouseover', tip.show)
+      .on('mouseout', tip.hide);
+
+rect1.append("title")
+    .text(function(d) { return d; });
+
+var names1 = svg1.append("g")
+  .attr("class", "monthnames");
+
+var namesGroup1 = names1.selectAll("text")
+  .data(d3.time.months(new Date(1969, 0, 1), new Date(1969, 12, 1)))
+  .enter().append("text")
+    .attr("text-anchor", "middle")
+    .attr("x", function(d) { return margin1.left + month1(d) * cellSize1 + .5*cellSize1; })
+    .attr("y", function(d) { return margin1.top-5; })
+    .text(function(d) { return d3.time.format("%b")(d); });
+
+var years1 = svg1.append("g")
+  .attr("class", "yearnums");
+
+var yearGroup1 = years1.selectAll("text")
+  .data(d3.range(1969, 1985))
+  .enter().append("text")
+    .attr("text-anchor", "start")
+    .attr("x", function(d) { return margin1.left+ 13.1*cellSize1; })
+    .attr("y", function(d) { 
+      return (d-1969) * cellSize1 + margin1.top + .6*cellSize1; 
+    })
+    .text(function(d) { return d; });
+
+
+
+d3.json("seatbelts.json", function(error, json1) {
+
+	data1 = d3.nest()
+	    .key(function(d) { return d.month; })
+	    .rollup(function(d) { 
+        return {"drivers": d[0].drivers,
+                "front": d[0].front, 
+                "rear": d[0].rear,
+                "total": d[0].drivers + d[0].front + d[0].rear}; })
+	    .map(json1);
+
+	rect1.attr("class", function(d) { 
+			return "RdYlGn day month"; 
+		})
+		.style("fill", function(d) { 
+			return color1(data1[d].total);
+		})
+    .select("title")
+      .text(function(d) { return d + ": " + new Date(d); });
+
+
+  var legend1 = svg1.append("g")
+    .attr("class", "legend")
+    .selectAll(".box")
+    .data(color1.range().reverse())
+    .enter().append("g")
+            .attr("class", "box");
+
+  legend1.append("rect")
+    .attr("x", 17.75*cellSize1)
+    .attr("y", function(d, i) {
+      return 1.5*cellSize1*(i) + cellSize1;
+    })
+    .attr("width", .75*cellSize1)
+    .attr("height", 1.5*cellSize1)
+    .style("fill", function(d) { return d; });
+
+  legend1.append("text")
+    .attr("x", 18.75*cellSize1 - 2)
+    .attr("y", function(d, i) {
+      return 14.5*cellSize1 - 1.5*cellSize1*(i+1);
+    })
+    .text(function(d) {
+      return color1.invertExtent(d)[0]
+    })
+
+  svg1.append("text")
+    .attr("class", "legendTitle")
+    .attr("text-anchor", "start")
+    .attr("x", 17.75*cellSize1)
+    .attr("y", cellSize1-2)
+    .text("Deaths")
+
+});
+
+
+function monthyear(dt) {
+	monthyearFormat = d3.time.format("%B %Y");
+	dt2 = new Date(dt);
+	dtUTC = new Date(dt2.getUTCFullYear(), dt2.getUTCMonth(), dt2.getUTCDate());
+	return monthyearFormat(dtUTC);
+}
+
+
+function handleClick(event){
+    console.log(document.getElementById("myVal").value)
+    draw(document.getElementById("myVal").value)
+    return false;
+}
+
+var duration = 500;
+
+function draw(val){
+    console.log("filter");
+
+    rectGroup1.selectAll("rect").classed("gray", false);
+
+    var notHighlight = rectGroup1.selectAll("rect").filter(function(d) { 
+      return data[d].total < val; 
+    })
+      .classed("gray", true);
+
+    return false;
+}
+
+</script>
+
+
+<!-- STACKED AREA -->
+
+<h1 class="stackedChartTitle"> Automobile Deaths by Driver/Passenger Status </h1>
+<p id="stackedChart"></p>
+
+
+<style>
+
+.stackedChartTitle {
+	text-align: center;
+}
+
+#stackedChart svg {
+	display: block;
+	margin: auto;
+}
+
+body {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.browser text {
+  text-anchor: end;
+}
+
+.brush .extent {
+  stroke: #fff;
+  fill-opacity: .125;
+  shape-rendering: crispEdges;
+}
+
+</style>
+
+
+<script>
+
+var margin = {top: 10, right: 10, bottom: 100, left: 40},
+    margin2 = {top: 430, right: 10, bottom: 20, left: 40},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom,
+    height2 = 500 - margin2.top - margin2.bottom;
+
+var parseDate = d3.time.format("%b %Y").parse;
+    // formatPercent = d3.format(".0%");
+
+var x = d3.time.scale().range([0, width]),
+    x2 = d3.time.scale().range([0, width]),
+    y = d3.scale.linear().range([height, 0]),
+    y2 = d3.scale.linear().range([height2, 0]);
+
+// var color = d3.scale.category10();
+var color = d3.scale.ordinal().range(["#a6cee3","#fb9a99", "#b2df8a"]);
+
+var xAxis = d3.svg.axis().scale(x).orient("bottom"),
+    xAxis2 = d3.svg.axis().scale(x2).orient("bottom"),
+    yAxis = d3.svg.axis().scale(y).orient("left");
+
+var brush = d3.svg.brush()
+    .x(x2)
+    .on("brush", brushed);
+
+// var area = d3.svg.area()
+//     .x(function(d) { return x(d.date); })
+//     // .y0(function(d) { return y(d.y0); })
+//     .y0(height)
+//     .y1(function(d) { return y(d.y0 + d.y); });
+var area = d3.svg.area()
+    // .x(function(d) { return x(d.date); })
+    .x(function(d) {
+        var result = x(d.date);
+        if (isNaN(result)) {
+            console.log("x", d.date, result);
+        }
+        return result;
+    })
+    .y0(function(d) { 
+    	var result = y(d.y0);
+    	if (isNaN(result)) {
+            console.log("y0", d.date, result);
+        }
+        return result; })
+    .y1(function(d) { return y(d.y0 + d.y); });
+
+var area2 = d3.svg.area()
+    // .interpolate("monotone")
+    .x(function(d) { return x2(d.date); })
+    .y0(function(d) { return y2(d.y0); })
+    .y1(function(d) { return y2(d.y0 + d.y); });
+
+var stack = d3.layout.stack()
+    .values(function(d) { return d.values; });
+
+var svg = d3.select("#stackedChart").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom);
+
+svg.append("defs").append("clipPath")
+    .attr("id", "clip")
+  .append("rect")
+    .attr("width", width)
+    .attr("height", height);
+
+var focus = svg.append("g")
+    .attr("class", "focus")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var context = svg.append("g")
+    .attr("class", "context")
+    .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
+
+
+
+d3.json("seatbelts.json", function(error, data) {
+
+	color.domain(d3.keys(data[0]).filter(function(key) { 
+		colorVars = ["drivers", "front", "rear"];
+		return colorVars.indexOf(key) > -1 ; 
+	}));
+
+	data.forEach(function(d) {
+		d.date = dateformat(d.month);
+	});
+
+	x.domain(d3.extent(data, function(d) { return d.date; }));
+	y.domain([0, d3.max(data, function(d) { 
+		return d3.round(1.1*(d.drivers + d.rear + d.front)/1000, 0)*1000; 
+	})]);
+	x2.domain(x.domain());
+	y2.domain(y.domain());
+
+	var browsers = stack(color.domain().map(function(name) {
+		return {
+			name: name,
+			values: data.map(function(d) {
+			return {date: d.date, y: +d[name]};
+			})
+		};
+	}));
+
+	focus.selectAll("path")
+		.data(browsers)
+		.enter().append("path")
+			.attr("clip-path", "url(#clip)")
+			.attr("d", function(d) { return area(d.values); })
+			.attr('class', 'focus')
+			.style("fill", function(d) { return color(d.name); })
+			.attr("data-legend",function(d) { return d.name});
+
+
+	focus.append("g")
+		.attr("class", "x axis")
+		.attr("transform", "translate(0," + height + ")")
+		.call(xAxis);
+
+	focus.append("g")
+		.attr("class", "y axis")
+		.call(yAxis);
+
+
+	var driverStatus = ["drivers", "front", "rear"];
+	var driverLabels = {"drivers": "Automobile Drivers",
+						"front": "Front Passengers",
+						"rear": "Rear Passengers"};
+
+	var legend = focus.append("g")
+		.attr("class", "legend")
+		.selectAll(".box")
+		.data(driverStatus)
+		.enter().append("g")
+            .attr("class", "box");
+
+    legend.append("rect")
+    	.attr("x", function(d) {
+    		mid = 0.5*(margin.left + width);
+    		idx = driverStatus.indexOf(d);
+    		return mid + (idx-2)*120 + 35;
+    	})
+    	.attr("y", 0)
+    	.attr("width", 10)
+    	.attr("height", 10)
+    	.style("fill", function(d) { return color(d); });
+
+    legend.append("text")
+    	.attr("text-anchor", "start")
+    	.attr("x", function(d) {
+    		mid = 0.5*(margin.left + width);
+    		idx = driverStatus.indexOf(d);
+    		return mid + (idx-2)*120 + 50;
+    	})
+    	.attr("y", 8)
+    	.text(function(d) { return driverLabels[d]; });
+
+	// legend = svg.append("g")
+ //    .attr("class","legend")
+ //    .attr("transform","translate(50,30)")
+ //    .style("font-size","12px")
+ //    .call(d3.legend);
+
+	// var browser = focus.selectAll(".browser")
+	// 	.data(browsers)
+	// .enter().append("g")
+	// 	.attr("class", "browser");
+
+
+	// browser.append("path")
+	// 	.attr("class", "area")
+	// 	.attr("d", function(d) { return area(d.values); })
+	// 	.style("fill", function(d) { return color(d.name); });
+
+	
+// var browser2 = context.selectAll(".browser")
+  //     .data(browsers)
+  //   .enter().append("g")
+  //     .attr("class", "browser");
+
+  // browser2.append("path")
+  //     .attr("class", "area")
+  //     .attr("d", function(d) { return area2(d.values); })
+  //     .style("fill", function(d) { return color(d.name); });
+
+	context.selectAll("path")
+		.data(browsers)
+		.enter().append("path")
+		.attr("clip-path", "url(#clip)")
+		.attr("d", function(d) { return area2(d.values); })
+		.attr('class', 'focus')
+		.style("fill", function(d) { return color(d.name); });
+
+
+	context.append("g")
+		.attr("class", "x axis")
+		.attr("transform", "translate(0," + height2 + ")")
+		.call(xAxis2);
+
+	context.append("g")
+		.attr("class", "x brush")
+		.call(brush)
+	.selectAll("rect")
+		.attr("y", -6)
+		.attr("height", height2 + 7);
+
+});
+
+
+
+function dateformat(dt) {
+	dt2 = new Date(dt);
+	dtUTC = new Date(dt2.getUTCFullYear(), dt2.getUTCMonth(), dt2.getUTCDate());
+	return dtUTC;
+}
+
+function brushed() {
+	x.domain(brush.empty() ? x2.domain() : brush.extent());
+	focus.selectAll("path.focus").attr("d", function(d) { return area(d.values); });
+	focus.select(".x.axis").call(xAxis);
+}
+
+function type(d) {
+	d.date = parseDate(d.date);
+	d.price = +d.price;
+	return d;
+}
+</script>
+
+
+
+
+<!-- List of Functionality -->
+
+<div class="row">
+    <div class="col-md-5">
+
+        <h2 class="page-header"> List of Functionality </h2>
+
+        <h4> C-Level Functionality </h4>
+        <ul>
+            <li> Get query string from URL. </li>
+            <li> Create bar chart of the letter counts using D3 in an SVG. </li>
+            <li> Remove decimal places on y-axis tick marks. </li>
+            <li> Reduce y-axis tick marks to integers only. </li>
+            <li> Thicken y-axis line to 2px. </li>
+            <li> Change the colors of the bars: vowels are gold, consonants are blue. </li>
+            <li> Sort bars alphabetically. </li>
+            <li> Add grid lines. </li>
+        </ul>
+
+        <h4> B-Level Functionality </h4>
+        <ul>
+            <li> Show exact value of bar when hovering over it. </li>
+        </ul>
+
+        <h4> A-Level Functionality </h4>
+        <ul>
+            <li> Show one bar at a time and smoothly grow each bar. </li>
+        </ul>
+
+    </div>
+
+    <div class="col-md-7">
+        <h2 class="page-header"> Discussion of Functionality </h2>
+        <p>
+            Most of my design decisions (changes from the <a href="http://bl.ocks.org/mbostock/3885304">tutorial source code</a>) focused on clarity. For example, the number y-axis tick labels was pre-determined, regardless of the range of the data. This resulted in a lot of non-integer tick marks, which does not make sense for count data. Thus, I specified there should be tick marks and grid lines at integers only, and no decimal places displayed. However, many other design decisions were simply to experiment with D3, e.g. thickening the y-axis line.
+        </p>
+        <p>
+            Some other changes I made were both for aesthetics and interactivity. I chose blue and gold because they are very different in both hue and intensity. When hovered over, the bars lighten and the exact value of the bar is displayed. I chose not to use a very bold tooltip (<a href="http://bl.ocks.org/Caged/6476579">example</a>) for showing the value because I felt the colors were already creating a lot of visual contrast. The grid lines already help make it clear what the value is, so it did not need to be emphasized much further.
+        </p>
+
+    </div>
+</div>
+
+
+<div class="container">
+
+<hr/>
+
+<footer>
+    <p style="text-align: center;">Griffin Okamoto &bullet; MSAN 622 Information Visualization &bullet; Spring 2015</p>
+</footer>
+
+</div><!--/.container -->
+
+<script src="../js/jquery.min.js"></script>
+<script src="../js/bootstrap.min.js"></script>
+<script src="../js/d3.min.js"></script>
+
+
+</body>
+</html>
