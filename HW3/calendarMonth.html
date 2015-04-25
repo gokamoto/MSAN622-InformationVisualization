@@ -11,16 +11,17 @@
 
 <p id="filtercaption"> Only view months with at least this many deaths: </p>
 
-<form id="filter" name="myform" onSubmit="return handleClick()">
-  <input name="Submit"  type="submit" value="Filter" >
+<form id="filter" name="myform" onSubmit="return handleClick()" onReset="draw(0)" action="#">
   <input type="text" id="myVal" placeholder="Add number here&hellip;">
+  <input name="Submit"  type="submit" value="Filter">
+  <br><br>
+  <input name="reset" type="reset" value="Reset" >
 </form>
 
-<br>
 
-<form id="reset" onSubmit="return draw(0)">
+<!-- <form id="reset" onSubmit="return draw(0)">
   <input name="Submit" type="submit" value="Reset" >
-</form>
+</form> -->
 
 <p id="calendarChart"></p>
 
@@ -54,9 +55,13 @@ body {
   shape-rendering: crispEdges;
 }
 
-.month {
+.month rect {
   fill: #fff;
-  stroke: #ccc;
+  transition: fill 0.5s;
+}
+
+.gray {
+  fill: #E8E8E8 !important;
 }
 
 .d3-tip {
@@ -88,11 +93,10 @@ body {
   left: 0;
 }
 
-/*.month {
-  fill: none;
-  stroke: #000;
-  stroke-width: 2px;
-}*/
+.legendTitle {
+  font-weight: bold;
+  font-size: 12px;
+}
 
 .q3-11{fill:rgb(253,174,97);}
 
@@ -113,127 +117,154 @@ body {
 
 <script>
 
+var data1;
 
-// ['rgb(255,245,240)','rgb(254,224,210)','rgb(252,187,161)','rgb(252,146,114)','rgb(251,106,74)','rgb(239,59,44)','rgb(203,24,29)','rgb(165,15,21)','rgb(103,0,13)']
+var cellSize1 = 30,
+    margin1 = {top: 30, right: 50, bottom: 10, left: 83}
+    width1 = 24*cellSize1 - margin1.left - margin1.right,
+    height1 = 20*cellSize1 - margin1.top - margin1.bottom;
 
-var data;
+var day1 = d3.time.format("%w"),
+    week1 = d3.time.format("%U"),
+    month1 = d3.time.format("%m"),
+    year1 = d3.time.format("%y"),
+    percent1 = d3.format(".1%"),
+    format1 = d3.time.format("%Y-%m-%d");
 
-var cellSize = 30,
-    width = 14*cellSize,
-    height = 20*cellSize,
-    margin = {top: 30, right: 10, bottom: 10, left: 10};
-
-var day = d3.time.format("%w"),
-    week = d3.time.format("%U"),
-    month = d3.time.format("%m"),
-    year = d3.time.format("%y"),
-    percent = d3.format(".1%"),
-    format = d3.time.format("%Y-%m-%d");
-
-var color = d3.scale.quantize()
+var color1 = d3.scale.quantize()
     .domain([1700, 4500])
-    .range(['rgb(255,245,240)','rgb(254,224,210)','rgb(252,187,161)','rgb(252,146,114)','rgb(251,106,74)','rgb(239,59,44)','rgb(203,24,29)','rgb(165,15,21)','rgb(103,0,13)']);
+    .range(["#fee0d2","#fcbba1","#fc9272","#fb6a4a","#ef3b2c","#cb181d","#a50f15","#67000d"]);
+
+console.log(color1(4157));
 
 
-
+// 8: ["#fff5f0","#fee0d2","#fcbba1","#fc9272","#fb6a4a","#ef3b2c","#cb181d","#99000d"]
 var tip = d3.tip()
   .attr('class', 'd3-tip')
   .offset([-10, 0])
   .html(function(d) {
     return "<div style=\"color:gold\"><strong>" + monthyear(d) + "</strong></div>"
     + "<div><strong>Total Killed:</strong>"
-    + " <span>" + data[d].total + "</span></div>"
+    + " <span>" + data1[d].total + "</span></div>"
     + " <div><strong>Drivers:</strong>"
-    + " <span>" + data[d].drivers + "</span></div>"
+    + " <span>" + data1[d].drivers + "</span></div>"
     + " <div><strong>Front-Seat:</strong>"
-    + " <span>" + data[d].front + "</span></div>"
+    + " <span>" + data1[d].front + "</span></div>"
     + " <div><strong>  Rear-Seat:</strong>"
-    + " <span>" + data[d].rear + "</span></div>"
+    + " <span>" + data1[d].rear + "</span></div>"
     ;
   })
 
-// data[Object.keys(data)[0]].total
 
-
-var svg = d3.select("#calendarChart").append("svg")
-    // .attr("transform", "translate(" + margin.left + "," + height + ")")
+var svg1 = d3.select("#calendarChart").append("svg")
     .data(d3.range(1969, 1980))
-    .attr("width", width)
-    .attr("height", height)
-    .attr("class", "RdYlGn");
+    .attr("width", width1)
+    .attr("height", height1)
+    .attr("class", "RdYlGn month");
     
-svg.call(tip);
+svg1.call(tip);
 
-var rect = svg.selectAll(".month")
+var rectGroup1 = svg1.append("g")
+  .attr("class", "monthGroup");
+
+var rect1 = rectGroup1.selectAll(".month")
     .data(function(d) { 
       return d3.time.months(new Date(d, 0, 1), 
                             new Date(d+(1984-1969), 12, 1)); })
-  .enter().append("rect")
+    .enter().append("rect")
     .attr("class", "month")
-    .attr("width", cellSize)
-    .attr("height", cellSize)
-    .attr("x", function(d) { return month(d) * cellSize; })
-    // .attr("x", 0)
-    .attr("y", function(d) { return (year(d)-69) * cellSize + margin.top; })
+    .attr("width", cellSize1)
+    .attr("height", cellSize1)
+    .attr("x", function(d) { return margin1.left + month1(d) * cellSize1; })
+    .attr("y", function(d) { return (year1(d)-69) * cellSize1 + margin1.top; })
     .style("fill", "white")
     .style("stroke", "#F5F5F5")
-    .datum(format)
+    .datum(format1)
     .on('mouseover', tip.show)
       .on('mouseout', tip.hide);
-rect.append("title")
+
+rect1.append("title")
     .text(function(d) { return d; });
 
-var names = svg.append("g")
+var names1 = svg1.append("g")
   .attr("class", "monthnames");
 
-var namesGroup = names.selectAll("text")
+var namesGroup1 = names1.selectAll("text")
   .data(d3.time.months(new Date(1969, 0, 1), new Date(1969, 12, 1)))
   .enter().append("text")
     .attr("text-anchor", "middle")
-    .attr("x", function(d) { return month(d) * cellSize + .5*cellSize; })
-    .attr("y", function(d) { return margin.top-5; })
+    .attr("x", function(d) { return margin1.left + month1(d) * cellSize1 + .5*cellSize1; })
+    .attr("y", function(d) { return margin1.top-5; })
     .text(function(d) { return d3.time.format("%b")(d); });
 
-var years = svg.append("g")
+var years1 = svg1.append("g")
   .attr("class", "yearnums");
 
-var yearGroup = years.selectAll("text")
+var yearGroup1 = years1.selectAll("text")
   .data(d3.range(1969, 1985))
   .enter().append("text")
     .attr("text-anchor", "start")
-    .attr("x", function(d) { return 13.1*cellSize; })
+    .attr("x", function(d) { return margin1.left+ 13.1*cellSize1; })
     .attr("y", function(d) { 
-      return (d-1969) * cellSize + margin.top + .6*cellSize; 
+      return (d-1969) * cellSize1 + margin1.top + .6*cellSize1; 
     })
     .text(function(d) { return d; });
 
 
 
+d3.json("seatbelts.json", function(error, json1) {
 
-d3.json("seatbelts.json", function(error, json) {
-
-// console.log(json);
-
-	data = d3.nest()
+	data1 = d3.nest()
 	    .key(function(d) { return d.month; })
 	    .rollup(function(d) { 
         return {"drivers": d[0].drivers,
                 "front": d[0].front, 
                 "rear": d[0].rear,
                 "total": d[0].drivers + d[0].front + d[0].rear}; })
-	    .map(json);
+	    .map(json1);
 
-
-// console.log(data);
-
-	rect.attr("class", function(d) { 
-			return "RdYlGn day " + color(data[d]); 
+	rect1.attr("class", function(d) { 
+			return "RdYlGn day month"; 
 		})
 		.style("fill", function(d) { 
-			return color(data[d].total);
+			return color1(data1[d].total);
 		})
     .select("title")
       .text(function(d) { return d + ": " + new Date(d); });
+
+
+  var legend1 = svg1.append("g")
+    .attr("class", "legend")
+    .selectAll(".box")
+    .data(color1.range().reverse())
+    .enter().append("g")
+            .attr("class", "box");
+
+  legend1.append("rect")
+    .attr("x", 17.75*cellSize1)
+    .attr("y", function(d, i) {
+      return 1.5*cellSize1*(i) + cellSize1;
+    })
+    .attr("width", .75*cellSize1)
+    .attr("height", 1.5*cellSize1)
+    .style("fill", function(d) { return d; });
+
+  legend1.append("text")
+    .attr("x", 18.75*cellSize1 - 2)
+    .attr("y", function(d, i) {
+      return 14.5*cellSize1 - 1.5*cellSize1*(i+1);
+    })
+    .text(function(d) {
+      return color1.invertExtent(d)[0]
+    })
+
+  svg1.append("text")
+    .attr("class", "legendTitle")
+    .attr("text-anchor", "start")
+    .attr("x", 17.75*cellSize1)
+    .attr("y", cellSize1-2)
+    .text("Deaths")
+
 });
 
 
@@ -254,30 +285,28 @@ function handleClick(event){
 var duration = 500;
 
 function draw(val){
-    var notHighlight = svg.selectAll("rect").filter(function(d) { 
+    console.log("filter");
+
+    rectGroup1.selectAll("rect").classed("gray", false);
+
+    var notHighlight = rectGroup1.selectAll("rect").filter(function(d) { 
       return data[d].total < val; 
     })
-      .transition()
-        .duration(duration)
-        .style("fill", "lightgray");
+      .classed("gray", true);
+      // .transition()
+      //   .duration(duration)
+      //   .style("fill", "lightgray");
 
-    var Highlight = svg.selectAll("rect").filter(function(d) { 
-      return data[d].total >= val; 
-    })
-      .transition()
-        .duration(duration)
-        .style("fill", function(d) { 
-          return color(data[d].total);
-        });
+    // var Highlight = svg.selectAll(".month").filter(function(d) { 
+    //   return data[d].total >= val; 
+    // })
+    //   .transition()
+    //     .duration(duration)
+    //     .style("fill", function(d) { 
+    //       return color(data[d].total);
+    //     });
 
     return false;
-    // console.log(notHighlight);
-
-    // d3.select("body").select("ul").append("li");
-    // dataset.push(val);
-    // var p = d3.select("body").selectAll("li")
-    // .data(dataset)
-    // .text(function(d,i){return i + ": " + d;})
 }
 
 </script>
