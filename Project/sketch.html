@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>MSAN 622 Information Visualization</title>
+
+<link href="../css/bootstrap.min.css" rel="stylesheet">
+<link href="../css/bootstrap-theme.min.css" rel="stylesheet">
+
+<style type="text/css">
+
+    body {
+        padding-top: 50px;
+        padding-bottom: 20px;
+        padding-left: 50px;
+        padding-right: 50px;
+    }
+
+    .myheader {
+        font-size: 30px;
+    }
+
+    .interface {
+        display: block;
+        margin: auto;
+    }
+
+</style>
+
+
+</head>
+
+<body>
+
+<!-- Fixed Navbar -->
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle Navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://gokamoto.github.io/MSAN622-InformationVisualization">MSAN 622</a>
+        </div>
+
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="http://gokamoto.github.io/MSAN622-InformationVisualization#homework">Homework</a></li>
+                <li><a href="http://gokamoto.github.io/MSAN622-InformationVisualization#project">Project</a></li>
+                <li><a href="http://gokamoto.github.io/MSAN622-InformationVisualization#participation">Participation</a></li>
+            </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="http://gokamoto.github.io/MSAN622-InformationVisualization#about">About</a></li>
+                <li><a href="http://gokamoto.github.io/MSAN622-InformationVisualization#contact">Contact</a></li>
+            </ul>
+        </div><!--/.nav-collapse -->
+    </div>
+</nav>
+
+<div class="container">
+    <!-- <div class="myheader"> -->
+        <h1>Project Dataset</h1>
+    <!-- </div> -->
+    <p> Griffin Okamoto </p>
+    
+</div>
+
+<div class="container">
+
+    <h3> Planned Tools </h3>
+
+    I plan on using R for much of the data preprocessing. I intend on finding a topoJSON file for the San Francisco neighborhoods, if possible. If not, I'll use the Google Maps API as in <a href="http://bl.ocks.org/mbostock/899711">this example</a>.
+
+    <h3> Planned Techniques </h3>
+
+    <ul>
+        <li> 
+            Map showing a dot per case reported, colored by request type that can also be filtered. Upon hovering, details about that case will appear in a tooltip. Clicking on the map will zoom to that neighborhood. This will use the lat/long columns to encode the location, the request type column to encode the colors, and perhaps the address, neighborhood, and request details columns for the hover details. This will require some sort of map to display the points on (see above). From this technique I hope to learn more about encoding geospatial data. 
+        </li>
+        <li>
+            Small multiples of barcharts, one per neighborhood, that show the number of cases from each request type. Or alternatively, a barchart per request type that shows the number from each neighborhood. Upon hovering, it would highlight the matching bars in the other plots. This would use the neighborhood and request type columns. Through this I hope to learn more about linked views.
+        </li>
+        <li>
+            Time series line plot showing the number of open cases per day by responsible agency. Upon hovering over the plot area, the points along the same x-value as the cursor would highlight with the value displayed. With daily values, I want to include brushing and panning so more detail can be seen. This would use the status and responsible agency columns. If I have time, I'd also like to have a drop-down menu that allows users to view the time series displayed by categorical variables other than responsible agency, such as neighborhood, category, etc. Through these techniques, I hope to learn more about incorporating several sophisticated features in one plot.
+        </li>
+        <li>
+            An animated map that shows dots that appear and disappear according to when the cases are opened and closed. The dots would change color the longer they exist on the plot to indicate how long the case has been open. This would require the lat/long, opened, and closed columns. I hope to learn more about enter/update/delete operations.
+        <li>
+
+    </ul>
+
+    <h3> Planned Interaction </h3>
+
+    As described above, I hope to implement many different types of interaction. This includes hover details, zooming, filtering, linked views, brushing, and panning. I plan on having these details be per-technique.
+
+    <h3> Planned Interface </h3>
+
+    The image below shows a rough sketch of what I want the interface to be. I want to have the main plot area that displays one plot at a time and allows the user to be interactive. To view a different plot, the user can click on the mini icon on the side bar, which is just a static image (not a actual svg). The title above the plot would also change depending which was being viewed in the main plot area.
+
+    <img src="MSAN 622 Project Interface Sketch.png" class="interface"> 
+
+
+</div>
+
+
+
+
+<div class="container">
+
+<hr/>
+
+<footer>
+    <p style="text-align: center;">Griffin Okamoto &bullet; MSAN 622 Information Visualization &bullet; Spring 2015</p>
+</footer>
+
+</div><!--/.container -->
+
+<script src="../js/jquery.min.js"></script>
+<script src="../js/bootstrap.min.js"></script>
+<script src="../js/d3.min.js"></script>
+
+
+</body>
+</html>
