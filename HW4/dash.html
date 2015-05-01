@@ -21,6 +21,10 @@
 
 <style>
 
+div#dashboard {
+    max-width: 960px;
+}
+
 #dashTitle {
 	font-family: sans-serif;
 	font-size: 24px;
@@ -30,64 +34,482 @@ svg {
 	float: left;
 }
 
+.tick text {
+	font-family: sans-serif;
+	font-size: 10px;
+}
+
+.axis line {
+  stroke: #ddd;
+}
+
+.axis path {
+	display: none;
+}
+
+.y.axis text{
+	font-family: sans-serif;
+	font-size: 10px;
+}
+
+#barchart .x.axis .tick text {
+	font-size: 24px;
+}
+
+.frame {
+  fill: none;
+  stroke: #aaa;
+}
+
+circle {
+  fill-opacity: .7;
+}
+
+circle.hidden {
+  fill: #ccc !important;
+}
+
+.extent {
+  fill: #000;
+  fill-opacity: .125;
+  stroke: #fff;
+}
+
+.diagonal {
+	font-family: sans-serif;
+	font-size: 12px;
+}
+
 </style>
 
 
 <script>
 
-var margin = {top: 20, right: 20, bottom: 20, left: 20},
-	marginSub = {top: 5, right: 5, bottom: 5, left: 5},
-    width = 960 - margin.left - margin.right,
-    height = 650 - margin.top - margin.bottom;
+var width = 960,
+    height = 650;
 
 
 // spm = scatter plot matrix
-var spm = d3.select("#scatterplotMatrix")
-	.attr("width", height)
-	.attr("height", height);
+
+// var spm = d3.select("#scatterplotMatrix")
+// 	.attr("width", height)
+// 	.attr("height", height);
 
 
-spm.append("rect")
-	.attr("x", marginSub.left)
-	.attr("y", marginSub.top)
-	.attr("width", height - marginSub.left - marginSub.right)
-	.attr('height', height - marginSub.top - marginSub.bottom)
-	.style("fill", "blue");
+// spm.append("rect")
+// 	.attr("x", marginSub.left)
+// 	.attr("y", marginSub.top)
+// 	.attr("width", height - marginSub.left - marginSub.right)
+// 	.attr('height', height - marginSub.top - marginSub.bottom)
+// 	.style("fill", "blue");
 
-var barchart = d3.select("#barchart")
-	.attr("width", width - height)
-	.attr("height", (1/3)*height);
+// var barchart = d3.select("#barchart")
+// 	.attr("width", width - height)
+// 	.attr("height", (1/3)*height);
 
-barchart.append("rect")
-	.attr("x", marginSub.left)
-	.attr("y", marginSub.top)
-	.attr("width", width - height - marginSub.left - marginSub.right)
-	.attr("height", (1/3)*height - marginSub.top - marginSub.bottom)
-	.style("fill", "red");
+// barchart.append("rect")
+// 	.attr("x", marginSub.left)
+// 	.attr("y", marginSub.top)
+// 	.attr("width", width - height - marginSub.left - marginSub.right)
+// 	.attr("height", (1/3)*height - marginSub.top - marginSub.bottom)
+// 	.style("fill", "red");
 
 // Histograms for the selected two variables
-var histCol = d3.select("#histogramCol")
-	.attr("width", width - height)
-	.attr("height", (1/3)*height);
+// var histCol = d3.select("#histogramCol")
+// 	.attr("width", width - height)
+// 	.attr("height", (1/3)*height);
 
-histCol.append("rect")
-	.attr("x", marginSub.left)
-	.attr("y", marginSub.top)
-	.attr("width", width - height - marginSub.left - marginSub.right)
-	.attr("height", (1/3)*height - marginSub.top - marginSub.bottom)
-	.style("fill", "green");
+// histCol.append("rect")
+// 	.attr("x", marginSub.left)
+// 	.attr("y", marginSub.top)
+// 	.attr("width", width - height - marginSub.left - marginSub.right)
+// 	.attr("height", (1/3)*height - marginSub.top - marginSub.bottom)
+// 	.style("fill", "green");
 
-var histRow = d3.select("#histogramRow")
-	.attr("width", width - height)
-	.attr("height", (1/3)*height);
+// var histRow = d3.select("#histogramRow")
+// 	.attr("width", width - height)
+// 	.attr("height", (1/3)*height);
 
-histRow.append("rect")
-	.attr("x", marginSub.left)
-	.attr("y", marginSub.top)
-	.attr("width", width - height - marginSub.left - marginSub.right)
-	.attr("height", (1/3)*height - marginSub.top - marginSub.bottom)
-	.style("fill", "orange");
+// histRow.append("rect")
+// 	.attr("x", 0)
+// 	.attr("y",0 )
+// 	.attr("width", width - height )
+// 	.attr("height", (1/3)*height )
+// 	.style("fill", "orange");
+	
+var color = d3.scale.category10();
+
+function scatterplotmatrix() {
+
+	var size = (height/3)-10,
+    	padding = 20;
+
+	var x = d3.scale.linear()
+	    .range([padding/2+3, size - padding/2-3])
+	    .nice();
+
+	var y = d3.scale.linear()
+	    .range([size - padding/2 - 3, padding/2+3])
+	    .nice();
+
+	var xAxis = d3.svg.axis()
+	    .scale(x)
+	    .orient("bottom")
+	    .ticks(5);
+
+	var yAxis = d3.svg.axis()
+	    .scale(y)
+	    .orient("left")
+	    .ticks(5);
+
+	var svg = d3.select("#scatterplotMatrix")
+		.attr("width", height)
+		.attr("height", height);
+
+	
+	d3.csv("moviesSubset.csv", function(error, data) {
+
+		var domainByTrait = {},
+	    	traits = d3.keys(data[0]).filter(function(d) { 
+	    		return d !== "title" && d !== "mpaa" ; }),
+	    	n = traits.length;
+	
+		data.forEach(function(d) {
+			d.budget = d.budget/1000000;
+		})
+
+		domainByTrait["length"] = [1, 390];
+		domainByTrait["budget"] = [0, 200];
+		domainByTrait["rating"] = [1, 10];
+
+	  	// xAxis.tickSize(size * n);
+  		// yAxis.tickSize(-size * n);
+
+  		var svg = d3.select("#scatterplotMatrix")
+    		// .attr("width", size * n + padding)
+    		// .attr("height", size * n + padding)
+    		.attr("width", height)
+    		.attr("height", height)
+    		.append("g")
+      			.attr("transform", "translate(" + padding + "," + 0 + ")");
+
+		svg.selectAll(".x.axis")
+			.data(traits)
+			.enter().append("g")
+			.attr("class", "x axis")
+			.attr("transform", function(d, i) { return "translate(" + (n - i - 1) * size + "," + (height-2*padding) + ")"; })
+			.each(function(d) { 
+				x.domain(domainByTrait[d]); d3.select(this).call(xAxis); 
+			});
+
+		svg.selectAll(".y.axis")
+			.data(traits)
+			.enter().append("g")
+			.attr("class", "y axis")
+			.attr("transform", function(d, i) { return "translate(" + 10 + "," + i * size + ")"; })
+			.each(function(d) { 
+				y.domain(domainByTrait[d]); d3.select(this).call(yAxis); 
+			});
+
+		var cell = svg.selectAll(".cell")
+			.data(cross(traits, traits))
+			.enter().append("g")
+			.attr("class", "cell")
+			.attr("transform", function(d) { 
+				return "translate(" + (n - d.i - 1) * size + "," + d.j * size + ")"; 
+			})
+			.each(plot);
+
+		// Titles for the diagonal.
+		diagTitles = {"budget": "Budget (millions)", 
+					  "length": "Length (minutes)",
+					  "rating": "IMDB Rating"};
+		cell.filter(function(d) { return d.i === d.j; }).append("text")
+			.attr("class", "diagonal")
+			.attr("x", padding)
+			.attr("y", padding)
+			.attr("dy", ".71em")
+			.text(function(d) { 
+				return diagTitles[d.x]; });
+
+		function plot(p) {
+
+			var cell = d3.select(this);
+
+			x.domain(domainByTrait[p.x]);
+			y.domain(domainByTrait[p.y]);
+
+			cell.append("rect")
+				.attr("class", "frame")
+				.attr("x", padding / 2)
+				.attr("y", padding / 2)
+				.attr("width", size - padding)
+				.attr("height", size - padding);
+
+			cell.selectAll("circle")
+				.data(data)
+				.enter().append("circle")
+				.attr("class", function(d) { return p.x + d[p.x] + p.y + d[p.y]; })
+				.attr("cx", function(d) { return x(d[p.x]); })
+				.attr("cy", function(d) { return y(d[p.y]); })
+				.attr("r", 3)
+				.style("fill", function(d) { return color(d.mpaa); });
+
+  		};
+
+  		function cross(a, b) {
+	    	var c = [], n = a.length, m = b.length, i, j;
+	    	for (i = -1; ++i < n;) 
+	    		for (j = -1; ++j < m;) 
+	    			c.push({x: a[i], i: i, y: b[j], j: j});
+	    	return c;
+	    };
+
+		d3.select(self.frameElement).style("height", size * n + padding + 20 + "px");
+
+	});
+
+};
+
+
+scatterplotmatrix();
+
+
+function barchart() {
+
+	var margin = {top: 20, right: 10, bottom: 30, left: 40},
+	    widthB = (width-height) - margin.left - margin.right,
+	    heightB = (1/3)*height - margin.top - margin.bottom;
+
+	var x = d3.scale.ordinal()
+	    .rangeRoundBands([0, widthB], .1);
+
+	var y = d3.scale.linear()
+	    .range([heightB, 0]);
+
+	var xAxis = d3.svg.axis()
+	    .scale(x)
+	    .orient("bottom");
+
+	var yAxis = d3.svg.axis()
+	    .scale(y)
+	    .orient("left")
+	    .ticks(10);
+
+	var svg = d3.select("#barchart")
+    		.attr("width", widthB + margin.left + margin.right)
+    		.attr("height", heightB + margin.top + margin.bottom)
+    		// .attr("width", widthB)
+    		// .attr("height", heightB)
+  		.append("g")
+    		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    d3.csv("moviesSubset.csv", function(error, data) {
+
+    	var mpaaCounts = {};
+
+    	data.forEach(function(d) {
+    		if (d.mpaa in mpaaCounts) {
+    			mpaaCounts[d.mpaa] += 1;
+    		}
+    		else {
+    			mpaaCounts[d.mpaa] = 1;
+    		}
+    	});
+
+    	x.domain(Object.keys(mpaaCounts));
+		y.domain([0, 3405]);
+
+    	svg.append("g")
+			.attr("class", "x axis")
+			.attr("transform", "translate(0," + (heightB) + ")")
+			.call(xAxis);
+
+		svg.append("g")
+				.attr("class", "y axis")
+				.call(yAxis)
+			.append("text")
+				// .attr("transform", "rotate(-90)")
+				.attr("x", -10)
+				.attr("y", margin.top-20)
+				.style("text-anchor", "end")
+				.text("Count")
+				.style("font-weight", "bold");
+
+		var bars = svg.append("g")
+				.attr("class", "bars");
+
+		var barGroup = bars.selectAll(".bar")
+			.data(d3.entries(mpaaCounts))
+			.enter().append("rect")
+				.attr("class", "bar")
+				.attr("x", function(d) { return x(d.key); })
+				.attr("width", x.rangeBand())
+				.attr("y", function(d) { return y(d.value); })
+				.attr("height", function(d) { return heightB - y(d.value); })
+				.style("fill", function(d) {
+					return color(d.key);
+				});
+
+
+    });
+
+}
+
+barchart();
+
+function histogram_columnvar() {
+
+	var margin = {top: 10, right: 30, bottom: 30, left: 20},
+    	widthC = (width-height) - margin.left - margin.right,
+    	heightC = (1/3)*height - margin.top - margin.bottom;
 	
 
+	d3.csv("moviesSubset.csv", function(error, origdata) {
+
+		values = [];
+
+		origdata.forEach(function(d) {
+			values.push(d.budget/1000000);
+		})
+
+		var x = d3.scale.linear()
+			.domain(d3.extent(values))
+	    	.range([0, widthC]);
+
+		var xAxis = d3.svg.axis()
+		    .scale(x)
+		    .orient("bottom");
+
+		// Generate a histogram using twenty uniformly-spaced bins.
+		var data = d3.layout.histogram()
+		    .bins(x.ticks(20))
+		    (values);
+
+		var y = d3.scale.linear()
+		    .domain([0, d3.max(data, function(d) { return d.y; })])
+		    .range([heightC, 0]);
+
+		var yAxis = d3.svg.axis()
+			.scale(y)
+			.orient("left")
+			.ticks(5);
+
+		var svg = d3.select("#histogramCol")
+		    .attr("width", widthC + margin.left + margin.right)
+		    .attr("height", heightC + margin.top + margin.bottom)
+		  .append("g")
+		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		var bar = svg.selectAll(".bar")
+		    .data(data)
+		  .enter().append("g")
+		    .attr("class", "bar")
+		    .attr("transform", function(d) { 
+		    	return "translate(" + (x(d.x)+margin.left) + "," + y(d.y) + ")"; 
+		    });
+
+		bar.append("rect")
+		    .attr("x", 0)
+		    .attr("width", widthC/20)
+		    .attr("height", function(d) { return heightC - y(d.y); });
+
+		svg.append("g")
+		    .attr("class", "x axis")
+		    .attr("transform", "translate(" + margin.left + "," + heightC + ")")
+		    .call(xAxis);
+
+		svg.append("g")
+		    .attr("class", "y axis")
+		    .attr("transform", "translate(" + (margin.left) + "," + 0 + ")")
+		    .call(yAxis)
+		    .append("text")
+		    	.attr("text-anchor", "end")
+		    	.attr("x", -10)
+		    	.attr("y", margin.top-10)
+		    	.text("Count")
+		    	.style("font-weight", "bold");
+
+	});
+}
+
+histogram_columnvar();
+
+function histogram_rowvar() {
+
+	var margin = {top: 10, right: 30, bottom: 30, left: 20},
+    	widthC = (width-height) - margin.left - margin.right,
+    	heightC = (1/3)*height - margin.top - margin.bottom;
+	
+
+	d3.csv("moviesSubset.csv", function(error, origdata) {
+
+		values = [];
+
+		origdata.forEach(function(d) {
+			values.push(d.budget/1000000);
+		})
+
+		var x = d3.scale.linear()
+			.domain(d3.extent(values))
+	    	.range([0, widthC]);
+
+		var xAxis = d3.svg.axis()
+		    .scale(x)
+		    .orient("bottom");
+
+		// Generate a histogram using twenty uniformly-spaced bins.
+		var data = d3.layout.histogram()
+		    .bins(x.ticks(20))
+		    (values);
+
+		var y = d3.scale.linear()
+		    .domain([0, d3.max(data, function(d) { return d.y; })])
+		    .range([heightC, 0]);
+
+		var yAxis = d3.svg.axis()
+			.scale(y)
+			.orient("left")
+			.ticks(5);
+
+		var svg = d3.select("#histogramRow")
+		    .attr("width", widthC + margin.left + margin.right)
+		    .attr("height", heightC + margin.top + margin.bottom)
+		  .append("g")
+		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		var bar = svg.selectAll(".bar")
+		    .data(data)
+		  .enter().append("g")
+		    .attr("class", "bar")
+		    .attr("transform", function(d) { 
+		    	return "translate(" + (x(d.x)+margin.left) + "," + y(d.y) + ")"; 
+		    });
+
+		bar.append("rect")
+		    .attr("x", 0)
+		    .attr("width", widthC/20)
+		    .attr("height", function(d) { return heightC - y(d.y); });
+
+		svg.append("g")
+		    .attr("class", "x axis")
+		    .attr("transform", "translate(" + margin.left + "," + heightC + ")")
+		    .call(xAxis);
+
+		svg.append("g")
+		    .attr("class", "y axis")
+		    .attr("transform", "translate(" + (margin.left) + "," + 0 + ")")
+		    .call(yAxis)
+		    .append("text")
+		    	.attr("text-anchor", "end")
+		    	.attr("x", -10)
+		    	.attr("y", margin.top-10)
+		    	.text("Count")
+		    	.style("font-weight", "bold");
+
+	});
+}
+
+histogram_rowvar();
 
 </script>
