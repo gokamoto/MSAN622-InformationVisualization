@@ -676,7 +676,7 @@ function barchartFade(mpaa) {
     <div class="col-md-12">
     <h3 class="page-header"> Data Preprocessing </h3>
         <p>
-            I used R to obtain the Seatbelts data from the datasets package. However, I could not find a way to extract the dates associated with each row, so I manually created a sequence of dates and appended it to a data frame. Then I exported a data frame as a JSON file, which was an array of objects with variable names as keys with their associated value.
+            I used R to obtain the movies data, then eliminated the records for which the budgets were missing. Then I just subsetted the columns that I wasn't going to use in my visualizations.
         </p>
     </div>
 </div>
