@@ -34,6 +34,11 @@ svg {
 	float: left;
 }
 
+.bar text {
+	font-family: sans-serif;
+	font-size: 10px;
+}
+
 .tick text {
 	font-family: sans-serif;
 	font-size: 10px;
@@ -52,9 +57,9 @@ svg {
 	font-size: 10px;
 }
 
-#barchart .x.axis .tick text {
+/*#barchart .x.axis .tick text {
 	font-size: 24px;
-}
+}*/
 
 .frame {
   fill: none;
@@ -80,6 +85,19 @@ circle.hidden {
 	font-size: 12px;
 }
 
+.fadeOut {
+	opacity: 0.1;
+}
+
+.invisible {
+	opacity: 0;
+}
+
+.barClick text {
+	opacity: 1;
+}
+
+
 </style>
 
 
@@ -87,55 +105,6 @@ circle.hidden {
 
 var width = 960,
     height = 650;
-
-
-// spm = scatter plot matrix
-
-// var spm = d3.select("#scatterplotMatrix")
-// 	.attr("width", height)
-// 	.attr("height", height);
-
-
-// spm.append("rect")
-// 	.attr("x", marginSub.left)
-// 	.attr("y", marginSub.top)
-// 	.attr("width", height - marginSub.left - marginSub.right)
-// 	.attr('height', height - marginSub.top - marginSub.bottom)
-// 	.style("fill", "blue");
-
-// var barchart = d3.select("#barchart")
-// 	.attr("width", width - height)
-// 	.attr("height", (1/3)*height);
-
-// barchart.append("rect")
-// 	.attr("x", marginSub.left)
-// 	.attr("y", marginSub.top)
-// 	.attr("width", width - height - marginSub.left - marginSub.right)
-// 	.attr("height", (1/3)*height - marginSub.top - marginSub.bottom)
-// 	.style("fill", "red");
-
-// Histograms for the selected two variables
-// var histCol = d3.select("#histogramCol")
-// 	.attr("width", width - height)
-// 	.attr("height", (1/3)*height);
-
-// histCol.append("rect")
-// 	.attr("x", marginSub.left)
-// 	.attr("y", marginSub.top)
-// 	.attr("width", width - height - marginSub.left - marginSub.right)
-// 	.attr("height", (1/3)*height - marginSub.top - marginSub.bottom)
-// 	.style("fill", "green");
-
-// var histRow = d3.select("#histogramRow")
-// 	.attr("width", width - height)
-// 	.attr("height", (1/3)*height);
-
-// histRow.append("rect")
-// 	.attr("x", 0)
-// 	.attr("y",0 )
-// 	.attr("width", width - height )
-// 	.attr("height", (1/3)*height )
-// 	.style("fill", "orange");
 	
 var color = d3.scale.category10();
 
@@ -249,7 +218,7 @@ function scatterplotmatrix() {
 			cell.selectAll("circle")
 				.data(data)
 				.enter().append("circle")
-				.attr("class", function(d) { return p.x + d[p.x] + p.y + d[p.y]; })
+				.attr("class", function(d) { return d.mpaa; })
 				.attr("cx", function(d) { return x(d[p.x]); })
 				.attr("cy", function(d) { return y(d[p.y]); })
 				.attr("r", 3)
@@ -304,6 +273,13 @@ function barchart() {
   		.append("g")
     		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
+	// var background = svg.append("rect")
+	// 	.attr("id", "barchartBg")
+	// 	.attr("width", widthB + margin.left + margin.right)
+	// 	.attr("height", heightB + margin.top + margin.bottom)
+	// 	.style("opacity", 0)
+	// 	.on("click", filterScatter(""));
+
     d3.csv("moviesSubset.csv", function(error, data) {
 
     	var mpaaCounts = {};
@@ -323,7 +299,7 @@ function barchart() {
     	svg.append("g")
 			.attr("class", "x axis")
 			.attr("transform", "translate(0," + (heightB) + ")")
-			.call(xAxis);
+			.call(xAxis)
 
 		svg.append("g")
 				.attr("class", "y axis")
@@ -341,16 +317,76 @@ function barchart() {
 
 		var barGroup = bars.selectAll(".bar")
 			.data(d3.entries(mpaaCounts))
-			.enter().append("rect")
-				.attr("class", "bar")
-				.attr("x", function(d) { return x(d.key); })
-				.attr("width", x.rangeBand())
-				.attr("y", function(d) { return y(d.value); })
-				.attr("height", function(d) { return heightB - y(d.value); })
-				.style("fill", function(d) {
-					return color(d.key);
-				});
+			.enter().append("g")
+			.attr("class", function(d) { return "bar " + d.key; });
 
+		barGroup.append("rect")
+			.attr("class", function(d) { return d.key; })
+			.attr("x", function(d) { return x(d.key); })
+			.attr("width", x.rangeBand())
+			.attr("y", function(d) { return y(d.value); })
+			.attr("height", function(d) { return heightB - y(d.value); })
+			.style("fill", function(d) {
+				return color(d.key);
+			});
+
+		barGroup.append("text")
+			.attr("text-anchor", "middle")
+			.attr("x", function(d) { return x(d.key) + 0.5*x.rangeBand(); })
+			.attr("y", function(d) { return y(d.value) - 10; })
+			.text("Click to")
+			.style("opacity", 0);
+
+		barGroup.append("text")
+			.attr("text-anchor", "middle")
+			.attr("x", function(d) { return x(d.key) + 0.5*x.rangeBand(); })
+			.attr("y", function(d) { return y(d.value) - 1; })
+			// .text(function(d) {
+			// 	console.log(d3.select(this));
+			// 	if(d3.select(this).attr("class").search("selected") > -1) {
+			// 		return "reset";
+			// 	}
+			// 	else {
+			// 		return "filter"
+			// 	}
+			// })
+			.text("filter")
+			.style("opacity", 0);
+
+		barGroup.on('click', function() {
+			var groupClasses = d3.select(this).attr("class");
+			var barClasses = d3.select(this).selectAll("rect").attr("class");
+			console.log(barClasses);
+			console.log(groupClasses);
+
+			// de-select all bars
+			d3.select("#barchart").selectAll("rect").classed({"selected": false});
+			d3.select("#barchart").selectAll(".bar").classed({"selected": false});
+			// select the bar that has been clicked on
+			d3.select(this).selectAll("rect").classed({"selected": true});
+			d3.select(this).classed({"selected": true});
+
+			if(barClasses.search("selected") === -1) {
+				barchartFade(barClasses);
+				filterScatter(groupClasses);	
+			}
+
+			// If bar is already selected, reset and de-select
+			else {
+				barchartFade("");
+				filterScatter("");
+				d3.select("#barchart").selectAll("rect").classed({"selected": false});
+				d3.select("#barchart").selectAll(".bar").classed({"selected": false});
+			}
+		});
+
+		barGroup.on('mouseover', function() {
+			d3.select(this).selectAll("text").style("opacity", 1);
+		});
+
+		barGroup.on('mouseout', function() {
+			d3.select(this).selectAll("text").style("opacity", 0);
+		});		
 
     });
 
@@ -511,5 +547,51 @@ function histogram_rowvar() {
 }
 
 histogram_rowvar();
+
+
+function filterScatter(mpaa) {
+
+	// console.log("called filterScatter for "+mpaa);
+
+	var allCircles = d3.select("#scatterplotMatrix").selectAll("circle");
+	allCircles.classed({"invisible": false});
+
+	var classes = mpaa.split(" ");
+
+	if(mpaa !== "") {
+		var invisible = d3.select("#scatterplotMatrix").selectAll("circle")
+			.filter(function(d) { 
+				return classes.indexOf(d.mpaa) == -1;
+			});
+		invisible.classed({"invisible": true});
+	}
+}
+
+
+function barchartFade(mpaa) {
+
+	// if(mpaa === "") {
+	var allBars = d3.select("#barchart").selectAll("rect");
+	allBars.classed({"fadeOut": false});
+	// }
+
+	if(mpaa !== "") {
+		var fadeBars = d3.select("#barchart").selectAll("rect")
+			.filter(function(d) { 
+				classes = mpaa.split(" ");
+				return classes.indexOf(d.key) === -1;
+			});
+		fadeBars.classed({"fadeOut": true});
+	}
+
+}
+
+
+function histogramFilter(which, mpaa) {
+
+	
+	
+}
+
 
 </script>
