@@ -327,7 +327,7 @@ scatterplotmatrix();
 
 function barchart() {
 
-    var margin = {top: 20, right: 10, bottom: 30, left: 40},
+    var margin = {top: 10, right: 10, bottom: 30, left: 40},
         widthB = (width-height) - margin.left - margin.right,
         heightB = (1/3)*height - margin.top - margin.bottom;
 
@@ -353,13 +353,6 @@ function barchart() {
             // .attr("height", heightB)
         .append("g")
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    // var background = svg.append("rect")
-    //  .attr("id", "barchartBg")
-    //  .attr("width", widthB + margin.left + margin.right)
-    //  .attr("height", heightB + margin.top + margin.bottom)
-    //  .style("opacity", 0)
-    //  .on("click", filterScatter(""));
 
     d3.csv("moviesSubset.csv", function(error, data) {
 
@@ -471,6 +464,13 @@ function barchart() {
 
     });
 
+     svg.append("text")
+            .attr("text-anchor", "end")
+            .attr("x", widthB)
+            .attr("y", margin.top)
+            .text("MPAA Rating");
+
+
 }
 
 barchart();
@@ -487,7 +487,7 @@ function histogram_columnvar() {
         values = [];
 
         origdata.forEach(function(d) {
-            values.push(d.budget/1000000);
+            values.push(d.rating);
         })
 
         var x = d3.scale.linear()
@@ -546,6 +546,13 @@ function histogram_columnvar() {
                 .attr("y", margin.top-10)
                 .text("Count")
                 .style("font-weight", "bold");
+
+         svg.append("text")
+            .attr("text-anchor", "end")
+            .attr("x", widthC)
+            .attr("y", margin.top)
+            .text("Rating");
+
 
     });
 }
@@ -623,6 +630,12 @@ function histogram_rowvar() {
                 .attr("y", margin.top-10)
                 .text("Count")
                 .style("font-weight", "bold");
+
+        svg.append("text")
+            .attr("text-anchor", "end")
+            .attr("x", widthC)
+            .attr("y", margin.top)
+            .text("Budget");
 
     });
 }
