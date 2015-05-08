@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Import d3 -->
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<!-- <script src="../../js/d3.min.js"></script> -->
+
+
+<h1 id="barchartsTitle"> Muni 311 Reports by Neighborhood </h1>
+<div id="barcharts"></div>
+
+
+<style>
+
+#barchartsTitle {
+	font-family: sans-serif;
+	font-size: 24px;
+}
+
+.neighborhoodLabel {
+	font-family: sans-serif;
+	font-size: 14px;
+	font-weight: bold;
+}
+
+div#barcharts {
+    max-width: 960px;
+}
+
+.axis line {
+  stroke: #ddd;
+}
+
+.axis path {
+	display: none;
+}
+
+.axis text {
+	font-family: sans-serif;
+	font-size: 10px;
+}
+
+
+</style>
+
+
+<script>
+
+// Chart dimensions.
+var margin = {top: 30, right: 20, bottom: 40, left: 80},
+    width = 900 - margin.right - margin.left,
+    height = 120 - margin.top - margin.bottom;
+
+var color = d3.scale.category10();
+
+var x = d3.scale.ordinal()
+	.rangeRoundBands([0, width], .1);
+
+var y = d3.scale.linear()
+    .range([height, 0])
+    .nice();
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left")
+    .ticks(4);
+
+// Load the data.
+d3.json("sf311_just2015_muni.json", function(json_data) {
+
+	var data1 = {};
+	var categories = [];
+
+	json_data.forEach(function(d) {
+		cat = d["Request.Type2"]
+		categories.push(cat);
+		if(d.Neighborhood in data1) {
+			if(cat in data1[d.Neighborhood]) {
+				data1[d.Neighborhood][cat] += 1; 
+			}
+			else {
+				data1[d.Neighborhood][cat] = 1; 
+			}
+		}
+		else {
+			data1[d.Neighborhood] = {};
+			data1[d.Neighborhood][cat] = 1;
+		}
+	});
+
+	categories = categories.filter(function(v, i) { 
+		return categories.indexOf(v) === i; 
+	});
+
+	// for(d in data1) {
+
+	// 	var total = 0;
+
+	// 	for(c in data1[d]) {
+	// 		total = total + data1[d][c];
+	// 	}
+
+	// 	for(c in data1[d]) {
+	// 		data1[d][c] = data1[d][c]/total;
+	// 	}		
+
+	// };
+
+
+
+	data = d3.entries(data1);
+
+	// x.domain(Object.keys(data[0].value));
+	x.domain(categories);
+	y.domain([0, 60]);
+	// y.domain([0, .65])''
+
+	console.log(data);
+
+    // Add an SVG element for each symbol, with the desired dimensions and margin.
+    var svg = d3.select("div#barcharts").selectAll("svg")
+        .data(data)
+    .enter().append("svg")
+    	.attr("id", function(d) { return d.key; })
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+    		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    svg.append("g")
+    	.data(data)
+		.attr("class", "x axis")
+		.attr("transform", "translate(0," + (height) + ")")
+		.call(xAxis)
+		.selectAll("text")  
+            .style("text-anchor", "middle")
+            .attr("dx", "0")
+            .attr("dy", "1em")
+            // .attr("transform", function(d) {
+            //     return "rotate(-15)" 
+            //     });
+		// .each(function(d) { 
+		// 		x.domain(Object.keys(d.value).sort()); 
+		// 		d3.select(this).call(xAxis); 
+		// 	});
+
+	svg.append("g")
+			.attr("class", "y axis")
+			.call(yAxis)
+		.append("text")
+			// .attr("transform", "rotate(-90)")
+			.attr("x", -10)
+			.attr("y", margin.top-40)
+			.style("text-anchor", "end")
+			.text("Count")
+			.style("font-weight", "bold");
+
+	svg.append("text")
+		.attr("class", "neighborhoodLabel")
+		.attr("text-anchor", "end")
+		.attr("x", width)
+		.attr("y", margin.top-30)
+		.text(function(d) { return d.key; });
+
+	var bars = svg.append("g")
+		.attr("class", "bars");
+
+	var barGroup = bars.selectAll(".bar")
+		.data(function(d) { 
+			return d3.entries(d.value);
+		})
+		.enter().append("g")
+		.attr("class", function(d) { return d.key; });
+
+	barGroup.append("rect")
+		.attr("class", function(d) { return d.key; })
+		.attr("x", function(d) { 
+			return x(d.key); 
+		})
+		.attr("width", x.rangeBand())
+		.attr("y", function(d) { return y(d.value); })
+		.attr("height", function(d) { return height - y(d.value); })
+		.style("fill", function(d) {
+			return color(d.key);
+		});
+});
+
+</script>
