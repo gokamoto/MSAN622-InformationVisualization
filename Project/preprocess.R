@@ -19,3 +19,36 @@ json <- toJSON(
 )
 
 cat(json, file="sf311_just2015.json")
+
+just2015_abandonedVehicles = subset(just2015, Category=="Abandoned Vehicle")
+
+json <- toJSON(
+  just2015_abandonedVehicles,
+  dataframe = "rows",
+  factor = "string",
+  pretty = TRUE
+)
+
+cat(json, file="sf311_just2015_abandonedVehicles.json")
+
+
+just2015_muni = subset(just2015, Category=="MUNI Feedback")
+
+just2015_muni$Request.Type2 = ""
+just2015_muni$Request.Type2[just2015_muni$Request.Type=="MUNI - Commendation"] = "Commendation"
+just2015_muni$Request.Type2[just2015_muni$Request.Type=="MUNI - Conduct_Discourteous_Insensitive_Inappropriate_Conduct"] = "Inappropriate Conduct"
+just2015_muni$Request.Type2[just2015_muni$Request.Type=="MUNI - Conduct_Inattentiveness_Negligence"] = "Negligence"
+just2015_muni$Request.Type2[just2015_muni$Request.Type=="MUNI - Conduct_Unsafe_Operation"] = "Unsafe Operation"
+just2015_muni$Request.Type2[just2015_muni$Request.Type=="MUNI - Services_Criminal_Activity"] = "Criminal Activity"
+just2015_muni$Request.Type2[just2015_muni$Request.Type=="MUNI - Services_Miscellaneous"] = "Miscellaneous"
+just2015_muni$Request.Type2[just2015_muni$Request.Type=="MUNI - Services_Service_Delivery_Facilities"] = "Delivery Facilities"
+just2015_muni$Request.Type2[just2015_muni$Request.Type=="MUNI - Services_Service_Planning"] = "Service Planning"
+
+json <- toJSON(
+  just2015_muni,
+  dataframe = "rows",
+  factor = "string",
+  pretty = TRUE
+)
+
+cat(json, file="sf311_just2015_muni.json")
