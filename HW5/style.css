@@ -1,0 +1,67 @@
+body {
+    background-color: whitesmoke;
+    margin: 8px 10px;
+    padding: 0px;
+}
+
+svg {
+    background-color: white;
+    margin: 0px;
+    float: left;
+}
+
+#block {
+    max-width: 950px;
+}
+
+#log {
+    color: dimgray;
+
+    font-size: 10px;
+    font-style: italic;
+    text-align: center;
+
+    margin: 0px;
+    padding: 0px;
+}
+
+.country {
+    fill: gainsboro;
+}
+
+.state {
+    fill: none;
+}
+
+/*
+ * Setting "opacity" can affect both
+ * fill and stroke. We want to set
+ * both of those separately.
+ */
+
+.symbol {
+    /*fill: royalblue;*/
+    fill-opacity: 0.7;
+
+    /*stroke: royalblue;*/
+    stroke-width: 1px;
+    stroke-opacity: 1.0;
+}
+
+/*
+ * We can specify how to highlight based
+ * on the type of underlying object.
+ */
+
+circle.highlight {
+    stroke: orangered;
+    stroke-width: 2px;
+}
+
+path.highlight {
+    fill: whitesmoke;
+
+    stroke: tomato;
+    stroke-width: 1px;
+}
+

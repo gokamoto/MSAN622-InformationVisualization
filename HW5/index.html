@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Symbol Map Demo</title>
+
+    <!-- load D3 and TopoJSON //-->
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src="http://d3js.org/topojson.v1.min.js"></script>
+    <script src="http://d3js.org/colorbrewer.v1.min.js"></script>
+
+    <!-- load custom CSS and JavaScript //-->
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
+
+ </head>
+
+<body>
+
+<div id="block">
+<svg id="map" width="980" height="600"></svg>
+<p id="log">Loading map... please wait.</p>
+</div>
+
+<script>
+/*
+ * For sample TopoJSON files, go to:
+ * https://gist.github.com/mbostock/4090846
+ */
+var base = "https://gist.githubusercontent.com/mbostock/4090846/raw/";
+var url = {
+    world: base + "world-50m.json",
+    earthquakes: "4.5_month.csv"
+};
+
+// Uses reusable chart model
+// See http://bost.ocks.org/mike/chart/
+var chart = symbolMap();
+
+// Update how we access data (need the precip property)
+chart = chart.value(function(d) { return d.mag; });
+
+// Nested calls to trigger drawing in proper order
+d3.json(url.world, function(mapError, mapJSON) {
+    if (processError(mapError)) return;
+
+    // update map data
+    chart = chart.map(mapJSON);
+
+    // Wait until the map is drawn before loading
+    // and drawing the data values
+    d3.csv(url.earthquakes, function(dataError, dataCSV) {
+        if (processError(dataError)) return;
+
+        chart = chart.values(dataCSV);
+        chart("map");
+    });
+});
+
+</script>
+
+</body>
+</html>
