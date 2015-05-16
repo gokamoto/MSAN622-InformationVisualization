@@ -20,18 +20,6 @@ json <- toJSON(
 
 cat(json, file="sf311_just2015.json")
 
-just2015_abandonedVehicles = subset(just2015, Category=="Abandoned Vehicle")
-
-json <- toJSON(
-  just2015_abandonedVehicles,
-  dataframe = "rows",
-  factor = "string",
-  pretty = TRUE
-)
-
-cat(json, file="sf311_just2015_abandonedVehicles.json")
-
-
 just2015_muni = subset(just2015, Category=="MUNI Feedback")
 
 just2015_muni$Request.Type2 = ""
