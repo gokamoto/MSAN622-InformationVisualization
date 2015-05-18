@@ -3,13 +3,12 @@
 
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="http://d3js.org/topojson.v1.min.js"></script>
-<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
-
+<script src="../js/d3-tip.js"></script>
 
 <h1 id="dashTitle"> 311 Cases - Muni Feedback </h1>
 <div id="dashboard">
 	<div id="mapChart"></div>
-	<svg id="barChart"></svg>
+	<div id="barChart"></div>
 	<svg id="lineChart"></svg>
 </div>
 
@@ -105,6 +104,23 @@ svg {
 	font-size: 10px;
 }
 
+.bar:hover {
+	opacity: 0.7;
+}
+
+.bar:hover text {
+	opacity: 1;
+}
+
+text {
+	font-family: sans-serif;
+}
+
+/*.fadeout {
+	opacity: 0.1;
+	transition: opacity 0.5s;
+}*/
+
 </style>
 
 
@@ -134,7 +150,7 @@ function map() {
 	    	return "<div>" + d.Address + "</div>"
 	    	+ "<div>" + d.Neighborhood + "</div>" 
 	    	+ "<div><strong> Request Type:</strong> " + d["Request.Type2"] + "</div>"
-	    	+ "<div><strong> Details:</strong> " + d["Request.Details"] + "</div>";
+	    	+ "<div><strong> Details:</strong> " + d["Request.Details2"] + "</div>";
 	  	})
 
 	var svg = d3.select("#mapChart").append("svg")
@@ -145,6 +161,12 @@ function map() {
 	svg.call(tip);
 
 	d3.json("pl_n.json", function(error, ca) {
+
+		json_neighborhoods = [];
+		ca.objects.planning_neighborhoods.geometries.forEach(function(d) {
+			json_neighborhoods.push(d.id);
+		})
+		console.log(json_neighborhoods);
 
 	    var featureCollection = topojson.feature(ca, ca.objects.planning_neighborhoods);
 	    var bounds = d3.geo.bounds(featureCollection);
@@ -170,6 +192,11 @@ function map() {
 	        .classed("feature", true)
 	        .attr("d", path)
 	        .on("click", clicked);
+	        // .on("click", function(d) {
+	        // 	console.log(d);
+	        // 	clicked;
+	        // 	barchart(d.id);
+	        // });
 
 	    g.append("path")
 	        .datum(topojson.mesh(ca, ca.objects.planning_neighborhoods, function(a, b) { return a !== b; }))
@@ -206,13 +233,13 @@ function map() {
 	            .style("fill", function(d) {
 	                return color(d["Request.Type2"]);
 	            })
-	            // .style("opacity", 0.7)
 	            .on('mouseover', tip.show)
 	            .on('mouseout', tip.hide);
 	    });
 
 	function clicked(d) {
 
+		console.log(d);
 		if (active.node() === this) return reset();
 		active.classed("active", false);
 		active = d3.select(this).classed("active", true);
@@ -232,6 +259,9 @@ function map() {
 
 	  	g.selectAll("circle").transition().duration(750)
 	  		.attr("r", 5/Math.sqrt(scale));
+
+	  	// d3.select("#barchart").selectAll("svg").remove();
+	  	barchart(d.id);
 	}
 
 	function reset() {
@@ -245,6 +275,8 @@ function map() {
 
 	  g.selectAll("circle").transition().duration(750)
 	  		.attr("r", 4);
+
+	  barchart("All Neighborhoods");
 	}
 
 	});
@@ -254,11 +286,13 @@ map();
 
 function barchart(nbhd) {
 
-	var margin = {top: 20, right: 5, bottom: 30, left: 120},
+	var margin = {top: 30, right: 5, bottom: 30, left: 120},
 		width = 0.3*allWidth - margin.left - margin.right,
 		height = 0.5*allHeight - margin.top - margin.bottom;
 
-	svg = d3.select("#barChart")
+	d3.select("#barChart").select("svg").remove();
+
+	svg = d3.select("#barChart").append("svg")
 	    .attr("width", width + margin.left + margin.right)
 	    .attr("height", height + margin.top + margin.top)
 	    .append("g")
@@ -278,7 +312,8 @@ function barchart(nbhd) {
 	var xAxis = d3.svg.axis()
 	    .scale(x)
 	    .orient("bottom")
-	    .ticks(5); 
+	    .ticks(5)
+	    .tickFormat(d3.format(".0")); 
 
 	d3.json("muni_category_nbhd.json", function(error, data) {
 
@@ -288,9 +323,6 @@ function barchart(nbhd) {
 			nested_data[d.Neighborhood] = d;
 			delete nested_data[d.Neighborhood]["Neighborhood"];
 		})
-
-		console.log(data);
-		console.log(nested_data);
 
 		nbhd_data = nested_data[nbhd];
 
@@ -302,6 +334,7 @@ function barchart(nbhd) {
 
 		y.domain(Object.keys(nbhd_data));
 		x.domain(d3.extent(counts));
+		// x.domain([0, 425]);
 
 		svg.append("g")
 	    	.data(data)
@@ -324,26 +357,55 @@ function barchart(nbhd) {
 			.style("font-weight", "bold")
 			.text("Count");
 
+		var title = svg.append("text")
+			.attr("text-anchor", "middle")
+			.attr("x", function(d) { return 0.5*width; })
+			.attr("y", -10)
+			.text(nbhd);
+
+		//title.remove();
+		title.text(nbhd);
+
 		var bars = svg.append("g")
 			.attr("class", "bars");
 
 		var barGroup = bars.selectAll(".bar")
 			.data(d3.entries(nbhd_data))
-			.enter().append("g");
+			.enter().append("g")
+			.attr("class", "bar");
 
 		barGroup.append("rect")
-			.attr("class", function(d) { return d.key; })
-			.attr("y", function(d) { 
-				return y(d.key); 
-			})
+			.attr("id", function(d) { return d.key; })
+			.attr("y", function(d) { return y(d.key); })
 			.attr("height", y.rangeBand())
 			.attr("x", function(d) { return 0; })
-			.attr("width", function(d) { return x(d.value); })
+			.attr("width", 0)
 			.style("fill", function(d) {
 				return color(d.key);
-			});
+			})
+			.on("click", barClick)
+			.transition().duration(250)
+				.attr("width", function(d) { return x(d.value); });
+			
+			
+	});
 
-	})
+	function barClick(bar) {
+
+		console.log(d3.select(this));
+		console.log("called barClick");
+		console.log(bar);
+		d3.select("#mapChart").selectAll("circle")
+			.transition().duration(750)
+				.style("opacity", 1)
+				.style("fill", function(d) { return color(d["Request.Type2"]); });
+
+		var fadeDots = d3.select("#mapChart").selectAll("circle")
+			.filter(function(d) { return d["Request.Type2"] !== bar.key; })
+			.transition().duration(750)
+				.style("fill", "#BABABA");
+
+	}
 
 }
 
