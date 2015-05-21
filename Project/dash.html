@@ -5,23 +5,63 @@
 <script src="http://d3js.org/topojson.v1.min.js"></script>
 <script src="../js/d3-tip.js"></script>
 
-<h1 id="dashTitle"> 311 Cases - Muni Feedback </h1>
+<!-- <h1 id="dashTitle"> 311 Cases - Muni Feedback </h1> -->
 <div id="dashboard">
-	<div id="mapChart"></div>
-	<div id="barChart"></div>
-	<svg id="lineChart"></svg>
+	<div id="mapChart" class="panel"></div>
+	<div id="header" class="panel">
+		<div class="header-wrapper">
+			<h5 class="dashTitle"> San Francisco 311 Cases </h5>
+			<h5 class="dashTitle"> Muni Feedback </h5>
+			<ul>
+				<li> Click on a neighborhood on the map to zoom in and see a new barchart with requests for that neighborhood. </li>
+				<li> Click on a bar in the barchart to filter the map by that request type. </li>
+				<li> Click and drag on the bottom area chart to filter the map by that time period. Drag the selected region to move the time window forwards or backwards. </li>
+
+			</ul>
+		</div>
+	</div>
+	<div id="barChart" class="panel"></div>
+	<div id="lineChart" class="panel"></div>
 </div>
 
 
 <style>
 
+.panel {
+	border: 1px solid lightgray;
+	display: inline-block;
+	float: left;
+}
+
+#header {
+	height: 214px;
+	width: 350px;
+	font-family: sans-serif;
+	margin-left: auto;
+}
+
+#header .header-wrapper {
+	padding: 0 15px;
+}
+
+#header h5 {
+	margin-top: 10px;
+	margin-bottom: -5px;
+}
+
+#header li {
+	font-size: 12px;
+}
+#header, #barChart {
+	float: right;
+}
+
 div#dashboard {
-    max-width: 1000px;
+    max-width: 1005px;
     /*max-height: 620px;*/
 }
 
-#dashTitle {
-	font-family: sans-serif;
+.dashTitle {
 	font-size: 24px;
 }
 
@@ -31,6 +71,7 @@ svg {
 
 #mapChart {
 	background-color: #D1F0FF;
+	/*background-color: "white";*/
 }
 
 .land {
@@ -47,6 +88,7 @@ svg {
 }
 
 .d3-tip {
+  max-width: 200px;
   line-height: 1;
   /*font-weight: bold;*/
   padding: 10px;
@@ -79,6 +121,11 @@ svg {
   left: 0;
 }
 
+.dotinvisible {
+	/*display: none;*/
+	fill: #BABABA !important;
+}
+
 .tick text {
 	font-family: sans-serif;
 	font-size: 10px;
@@ -109,17 +156,30 @@ svg {
 }
 
 .bar:hover text {
-	opacity: 1;
+	opacity: 1 !important;
 }
 
 text {
 	font-family: sans-serif;
 }
 
+
+
 /*.fadeout {
 	opacity: 0.1;
 	transition: opacity 0.5s;
 }*/
+
+.area {
+  fill: steelblue;
+  clip-path: url(#clip);
+}
+
+.brush .extent {
+  stroke: #fff;
+  fill-opacity: .125;
+  shape-rendering: crispEdges;
+}
 
 </style>
 
@@ -128,6 +188,10 @@ text {
 
 var allWidth = 1000,
     allHeight = 620;
+
+var parseDate = d3.time.format("%Y-%m-%d").parse;
+
+var xDom = [];
    	
 var color = d3.scale.ordinal()
 				.domain(["Commendation", "Criminal Activity", "Delivery Facilities",
@@ -138,19 +202,19 @@ var color = d3.scale.ordinal()
 
 function map() {
 
-	var width = .7*allWidth,
-		height = allHeight,
+	var width = .65*allWidth,
+		height = 0.8*allHeight,
 		active = d3.select(null);
-
 
 	var tip = d3.tip()
 		.attr('class', 'd3-tip')
 		.offset([-10, 0])
 		.html(function(d) {
 	    	return "<div>" + d.Address + "</div>"
-	    	+ "<div>" + d.Neighborhood + "</div>" 
+	    	+ "<div><strong> Neighborhood:</strong> " + d.Neighborhood + "</div>" 
 	    	+ "<div><strong> Request Type:</strong> " + d["Request.Type2"] + "</div>"
-	    	+ "<div><strong> Details:</strong> " + d["Request.Details2"] + "</div>";
+	    	+ "<div><strong> Details:</strong> " + d["Request.Details2"] + "</div>"
+	    	+ "<div><strong> Date:</strong> " + d["Opened"] + "</div>";
 	  	})
 
 	var svg = d3.select("#mapChart").append("svg")
@@ -162,11 +226,11 @@ function map() {
 
 	d3.json("pl_n.json", function(error, ca) {
 
-		json_neighborhoods = [];
-		ca.objects.planning_neighborhoods.geometries.forEach(function(d) {
-			json_neighborhoods.push(d.id);
-		})
-		console.log(json_neighborhoods);
+		// json_neighborhoods = [];
+		// ca.objects.planning_neighborhoods.geometries.forEach(function(d) {
+		// 	json_neighborhoods.push(d.id);
+		// })
+		// console.log(json_neighborhoods);
 
 	    var featureCollection = topojson.feature(ca, ca.objects.planning_neighborhoods);
 	    var bounds = d3.geo.bounds(featureCollection);
@@ -175,9 +239,9 @@ function map() {
 	        centerY = d3.sum(bounds, function(d) {return d[1];}) / 2;
 
 	    var projection = d3.geo.mercator()
-	        .scale(240000)
+	        .scale(210000)
 	        // .translate([width / 2, height / 2])
-	        .center([centerX+.03, centerY+0.007]);
+	        .center([centerX+.04, centerY-0.01]);
 
 	    var path = d3.geo.path()
 	        .projection(projection);
@@ -204,7 +268,7 @@ function map() {
 	        .attr("d", path);
 	        
 
-	    d3.json("sf311_just2015_muni.json", function(dataError, data) {
+	    d3.json("muni.json", function(dataError, data) {
 
 	        data.forEach(function(d) {
 	            var loc = d.Point.split(",");
@@ -221,7 +285,7 @@ function map() {
 	                .attr("class", "dot");
 
 	        dotGroups.append("circle")
-	            .attr("r", 4)
+	            .attr("r", 3.5)
 	            .attr("cx", function(d, i) {
 	                // projection takes [longitude, latitude]
 	                // and returns [x, y] as output
@@ -233,13 +297,15 @@ function map() {
 	            .style("fill", function(d) {
 	                return color(d["Request.Type2"]);
 	            })
+	            .style("opacity", 0.9)
 	            .on('mouseover', tip.show)
 	            .on('mouseout', tip.hide);
 	    });
 
 	function clicked(d) {
 
-		console.log(d);
+		// console.log(d);
+		// console.log(activeBar);
 		if (active.node() === this) return reset();
 		active.classed("active", false);
 		active = d3.select(this).classed("active", true);
@@ -260,8 +326,8 @@ function map() {
 	  	g.selectAll("circle").transition().duration(750)
 	  		.attr("r", 5/Math.sqrt(scale));
 
-	  	// d3.select("#barchart").selectAll("svg").remove();
 	  	barchart(d.id);
+
 	}
 
 	function reset() {
@@ -284,13 +350,23 @@ function map() {
 
 map();
 
-function barchart(nbhd) {
+var activeBar = "";
 
-	var margin = {top: 30, right: 5, bottom: 30, left: 120},
-		width = 0.3*allWidth - margin.left - margin.right,
-		height = 0.5*allHeight - margin.top - margin.bottom;
+function barchart(nbhd, start, end) {
+
+	var parseDate = d3.time.format("%Y-%m-%d").parse;
+	if(start === undefined) start = parseDate("2015-01-01");
+	if(end === undefined) end = parseDate("2015-04-20");
+
+	var margin = {top: 40, right: 20, bottom: 40, left: 120},
+		width = 0.35*allWidth - margin.left - margin.right,
+		height = 0.45*allHeight - margin.top - margin.bottom+1;
+		// active = d3.select(null);
 
 	d3.select("#barChart").select("svg").remove();
+	// console.log(d3.select("#barchart").select("svg").selectAll(".bar").empty());
+	// d3.select("#barchart").selectAll(".bar").remove()
+	// d3.select("#barchart").selectAll(".axis").remove()
 
 	svg = d3.select("#barChart").append("svg")
 	    .attr("width", width + margin.left + margin.right)
@@ -315,16 +391,56 @@ function barchart(nbhd) {
 	    .ticks(5)
 	    .tickFormat(d3.format(".0")); 
 
-	d3.json("muni_category_nbhd.json", function(error, data) {
+	d3.json("muni.json", function(error, json_data) {
 
-		var nested_data = {};
+		var data = json_data.filter(function(d) { 
+				return parseDate(d.Opened_date) >= start &&
+						parseDate(d.Opened_date) <= end;
+			});
+
+		var data1 = {};
+		var categories = [];
+
+		data1["All Neighborhoods"] = {};
 
 		data.forEach(function(d) {
-			nested_data[d.Neighborhood] = d;
-			delete nested_data[d.Neighborhood]["Neighborhood"];
-		})
+			cat = d["Request.Type2"]
+			categories.push(cat);
+			if(d.Neighborhood in data1) {
+				if(cat in data1[d.Neighborhood]) {
+					data1[d.Neighborhood][cat] += 1; 
+				}
+				else {
+					data1[d.Neighborhood][cat] = 1; 
+				}
+			}
+			else {
+				data1[d.Neighborhood] = {};
+				data1[d.Neighborhood][cat] = 1;
+			}
+			if(cat in data1["All Neighborhoods"]) {
+				data1["All Neighborhoods"][cat] += 1;
+			}
+			else {
+				data1["All Neighborhoods"][cat] = 1;
+			}
+		});
 
-		nbhd_data = nested_data[nbhd];
+		categories = categories.filter(function(v, i) { 
+			return categories.indexOf(v) === i; 
+		});
+		categories.sort();
+
+		// data = d3.entries(data1);
+
+		// var nested_data = {};
+
+		// data.forEach(function(d) {
+		// 	nested_data[d.Neighborhood] = d;
+		// 	delete nested_data[d.Neighborhood]["Neighborhood"];
+		// })
+
+		nbhd_data = data1[nbhd];
 
 		var counts = [];
 		for(var key in nbhd_data) {
@@ -332,12 +448,14 @@ function barchart(nbhd) {
 		    counts.push(value);
 		}
 
-		y.domain(Object.keys(nbhd_data));
-		x.domain(d3.extent(counts));
+		y.domain(categories);
+		x.domain([0, d3.max(counts)]);
+		xDom = x.domain();
 		// x.domain([0, 425]);
+		// x.domain([0, Math.ceil(d3.max(counts)/100)*100]);
 
 		svg.append("g")
-	    	.data(data)
+			.data(counts)
 			.attr("class", "x axis")
 			.attr("transform", "translate(0," + (height) + ")")
 			.call(xAxis)
@@ -350,8 +468,7 @@ function barchart(nbhd) {
 			.attr("class", "y axis")
 			.call(yAxis)
 		.append("text")
-			// .attr("transform", "rotate(-90)")
-			.attr("x", width + margin.right)
+			.attr("x", width)
 			.attr("y", height - 10)
 			.style("text-anchor", "end")
 			.style("font-weight", "bold")
@@ -367,7 +484,7 @@ function barchart(nbhd) {
 		title.text(nbhd);
 
 		var bars = svg.append("g")
-			.attr("class", "bars");
+			.attr("id", "bars");
 
 		var barGroup = bars.selectAll(".bar")
 			.data(d3.entries(nbhd_data))
@@ -379,22 +496,42 @@ function barchart(nbhd) {
 			.attr("y", function(d) { return y(d.key); })
 			.attr("height", y.rangeBand())
 			.attr("x", function(d) { return 0; })
-			.attr("width", 0)
+			.attr("width", function(d) { return x(d.value); })
 			.style("fill", function(d) {
-				return color(d.key);
+				if(d.key == activeBar || activeBar === ""){
+					return color(d.key);
+				}
+				return "#BABABA";
 			})
-			.on("click", barClick)
-			.transition().duration(250)
-				.attr("width", function(d) { return x(d.value); });
-			
-			
+			.transition().duration(250);
+
+		// barGroup.exit().remove()
+		// barGroup.attr("width", function(d) { return x(d.value); })
+
+		barGroup.append("text")
+			.attr("text-anchor", "middle")
+			.attr("x", function(d) { return 30; })
+			.attr("y", function(d) { return y(d.key) + 0.6*y.rangeBand(); })
+			.text("Click to filter")
+			.style("font-size", "10px")
+			.style("opacity", 0);
+
+		barGroup.on("click", barClick);	
+
 	});
 
-	function barClick(bar) {
+}
 
-		console.log(d3.select(this));
+function barClick(bar) {
+
+		if (activeBar === bar.key) return barReset();
+		activeBar = bar.key;
+		// if (active.node() === this) return barReset();
+		// active.classed("active", false);
+		// active = d3.select(this).classed("active", true);
+
 		console.log("called barClick");
-		console.log(bar);
+
 		d3.select("#mapChart").selectAll("circle")
 			.transition().duration(750)
 				.style("opacity", 1)
@@ -405,14 +542,226 @@ function barchart(nbhd) {
 			.transition().duration(750)
 				.style("fill", "#BABABA");
 
+		console.log(d3.select("#barChart").selectAll("rect").empty());
+
+		d3.select("#barChart").selectAll("rect")
+			.transition().duration(750)
+				.style("opacity", 1)
+				.style("fill", function(d) { return color(d.key); });
+
+		var fadeBars = d3.select("#barChart").selectAll("rect")
+			.filter(function(d) { return d.key !== bar.key})
+			.transition().duration(750)
+				.style("fill", "#BABABA");
+
 	}
 
-}
+	function barReset() {
 
+		// active.classed("active", false);
+	 //    active = d3.select(null);
+
+	 	activeBar = "";
+
+		// Reset all colors on map
+		d3.select("#mapChart").selectAll("circle")
+			.transition().duration(750)
+				.style("opacity", 1)
+				.style("fill", function(d) { return color(d["Request.Type2"]); });
+
+		d3.select("#barChart").selectAll("rect")
+			.transition().duration(750)
+				.style("opacity", 1)
+				.style("fill", function(d) { return color(d.key); });
+
+	}
 
 barchart("All Neighborhoods");
 
 
+function linechart() {
+
+	var margin = {top: 30, right: 20, bottom: 25, left: 35},
+    	width = allWidth - margin.left - margin.right + 3,
+    	height = .2*allHeight - margin.top - margin.bottom;
+
+	var parseDate = d3.time.format("%Y-%m-%d").parse;
+
+	var x = d3.time.scale().range([0, width]),
+    	y = d3.scale.linear().range([height, 0]);
+
+	var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(4),
+	    yAxis = d3.svg.axis().scale(y).orient("left").ticks(4);
+
+	var brush = d3.svg.brush()
+	    .x(x)
+	    .on("brush", brushed);
+
+	var area = d3.svg.area()
+	    .interpolate("monotone")
+	    .x(function(d) { return x(d.date); })
+	    .y0(height)
+	    .y1(function(d) { return y(d.cases_by_day); });
+
+	var svg = d3.select("#lineChart").append("svg")
+	    .attr("width", width + margin.left + margin.right)
+	    .attr("height", height + margin.top + margin.bottom);
+
+	svg.append("defs").append("clipPath")
+    		.attr("id", "clip")
+		.append("rect")
+    		.attr("width", width)
+    		.attr("height", height);
+
+	var context = svg.append("g")
+	    .attr("class", "context")
+	    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+	d3.json("muni_ts.json", function(error, data) {
+
+		data.forEach(function(d) {
+			d.date = parseDate(d.date);
+		})
+
+		x.domain(d3.extent(data.map(function(d) { return d.date; })));
+		y.domain([0, d3.max(data.map(function(d) { return d.cases_by_day; }))]);
+
+	  	context.append("path")
+	    	.datum(data)
+	    	.attr("class", "area")
+	    	.attr("d", area);
+
+	  	context.append("g")
+	    	.attr("class", "x axis")
+	    	.attr("transform", "translate(0," + height + ")")
+	     	.call(xAxis);
+
+	    context.append("g")
+		    .attr("class", "y axis")
+		    .call(yAxis);
+
+	  	context.append("g")
+	      		.attr("class", "x brush")
+	      		.call(brush)
+	    	.selectAll("rect")
+	      		.attr("y", 0)
+	      		.attr("height", height);
+
+	    context.append("text")
+	    	.attr("text-anchor", "start")
+	    	.attr("x", 0)
+	    	.attr("y", 0)
+	    	.text("Cases Opened per Day");
+
+	    context.append("text")
+	    	.attr("id", "daterange")
+	    	.attr("text-anchor", "end")
+	    	.attr("x", width)
+	    	.attr("y", 0);
+
+	});
+
+	function brushed() {
+
+		var start = brush.extent()[0],
+			end = brush.extent()[1];
+
+		format = d3.time.format("%B %e, %Y");
+
+		display = format(start) + " - " + format(end);
+		context.select("#daterange").text(display);
+		var dots = d3.select("#mapChart").selectAll("circle");
+		dots.classed('dotinvisible', false);
+
+		var invisibleDots = dots.filter(function(d) { 
+					return parseDate(d.Opened_date) < start ||
+						parseDate(d.Opened_date) > end;
+						// 
+				});
+
+		invisibleDots.classed("dotinvisible", true);
+
+		if(brush.empty()) {
+			context.select("#daterange").text("");
+			d3.select("#mapChart").selectAll("circle").classed("dotinvisible", false);
+			// barchart("All Neighborhoods");
+			// barUpdate("All Neighborhoods", end);
+		} else {
+			// barchart("All Neighborhoods", start, end);
+			// barUpdate("All Neighborhoods", start, end)
+		}
+
+	}
+
+}
+
+linechart();
+
+function barUpdate(nbhd, start, end) {
+
+	var margin = {top: 30, right: 5, bottom: 40, left: 120},
+		width = 0.3*allWidth - margin.left - margin.right,
+		height = 0.5*allHeight - margin.top - margin.bottom;
+
+	var x = d3.scale.linear()
+	    .range([0, width])
+	    .nice();
+
+	d3.json("muni.json", function(error, json_data) {
+
+		var data = json_data.filter(function(d) { 
+				return parseDate(d.Opened_date) >= start &&
+						parseDate(d.Opened_date) <= end;
+			});
+
+		var data1 = {};
+		var categories = [];
+
+		data1["All Neighborhoods"] = {};
+
+		data.forEach(function(d) {
+			cat = d["Request.Type2"]
+			categories.push(cat);
+			if(d.Neighborhood in data1) {
+				if(cat in data1[d.Neighborhood]) {
+					data1[d.Neighborhood][cat] += 1; 
+				}
+				else {
+					data1[d.Neighborhood][cat] = 1; 
+				}
+			}
+			else {
+				data1[d.Neighborhood] = {};
+				data1[d.Neighborhood][cat] = 1;
+			}
+			if(cat in data1["All Neighborhoods"]) {
+				data1["All Neighborhoods"][cat] += 1;
+			}
+			else {
+				data1["All Neighborhoods"][cat] = 1;
+			}
+		});
+
+		var nbhd_data = data1[nbhd];
+		var counts = [];
+		for(var key in nbhd_data) {
+		    var value = nbhd_data[key];
+		    counts.push(value);
+		}
+
+		// x.domain([0, d3.max(counts)]);
+		x.domain(xDom);
+
+		var bars = d3.select('#bars').selectAll("rect");
+		bars.data(nbhd_data)
+			.attr("width", function(d) {
+				console.log('something');
+				console.log(d);
+				return x(d.value); 
+			});
+	});
+
+}
 
 
 
